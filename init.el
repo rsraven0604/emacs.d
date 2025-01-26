@@ -66,8 +66,8 @@
   )
 
 ;; 背景透過
-(set-frame-parameter nil 'alpha-background 70)
-(add-to-list 'default-frame-alist '(alpha-background . 60))
+(set-frame-parameter nil 'alpha-background 75)
+(add-to-list 'default-frame-alist '(alpha-background . 75))
 
 ;; org-mode, org-agendaの設定
 ;; 参考 https://qiita.com/mamo3gr/items/6324b695131fef9b6031
@@ -138,14 +138,19 @@
 
 
 ;; ob-mermaid
-(use-package ob-mermaid
-  :ensure t
-  :config
-  (org-babel-do-load-languages
-    'org-babel-load-languages
-    '((mermaid . t)
-      (scheme . t)))
-  (setq ob-mermaid-cli-path "/usr/bin/mmdc"))
+;; (use-package ob-mermaid
+;;   :ensure t
+;;   :config
+;;   (org-babel-do-load-languages
+;;     'org-babel-load-languages
+;;     '((mermaid . t)
+;;       (scheme . t)))
+;;   (setq ob-mermaid-cli-path "/usr/bin/mmdc"))
+;; (use-package mermaid-mode
+;;   :ensure t
+;;   :config
+;;   (setq mermaid-output-format "/usr/bin/mmdc")
+;;   )
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
