@@ -10,8 +10,8 @@
 
 ;; パッケージリポジトリの設定
 (require 'package)
-(add-to-list 'package-archives '("melpa-stable" . "https://stable.melpa.org/packages/") t)
-;; (add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
+;;(add-to-list 'package-archives '("melpa-stable" . "https://stable.melpa.org/packages/") t)
+(add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
 (add-to-list 'package-archives '("gnu" . "https://elpa.gnu.org/packages/") t)
 (package-initialize)
 
@@ -136,21 +136,38 @@
         ("s" . org-agenda-schedule)
         ("S" . org-save-all-org-buffers)))
 
+(use-package org-roam
+  :ensure t
+  :custom
+  (org-roam-directory (file-truename "~/Dropbox/roam/"))
+  :bind (("C-c n l" . org-roam-buffer-toggle)
+         ("C-c n f" . org-roam-node-find)
+         ("C-c n g" . org-roam-graph)
+         ("C-c n i" . org-roam-node-insert)
+         ("C-c n c" . org-roam-capture)
+         ;; Dailies
+         ("C-c n j" . org-roam-dailies-capture-today))
+  :config
+  (setq org-roam-database-connector 'sqlite-builtin)
+  ;; If you're using a vertical completion framework, you might want a more informative completion interface
+  (setq org-roam-node-display-template (concat "${title:*} " (propertize "${tags:10}" 'face 'org-tag)))
+  (org-roam-db-autosync-mode)
+  ;; If using org-roam-protocol
+  (require 'org-roam-protocol))
 
-;; ob-mermaid
-;; (use-package ob-mermaid
-;;   :ensure t
-;;   :config
-;;   (org-babel-do-load-languages
-;;     'org-babel-load-languages
-;;     '((mermaid . t)
-;;       (scheme . t)))
-;;   (setq ob-mermaid-cli-path "/usr/bin/mmdc"))
-;; (use-package mermaid-mode
-;;   :ensure t
-;;   :config
-;;   (setq mermaid-output-format "/usr/bin/mmdc")
-;;   )
+(use-package ob-mermaid
+  :ensure t
+  :config
+  (org-babel-do-load-languages
+    'org-babel-load-languages
+    '((mermaid . t)
+      (scheme . t)))
+  (setq ob-mermaid-cli-path "/usr/bin/mmdc"))
+(use-package mermaid-mode
+  :ensure t
+  :config
+  (setq mermaid-output-format "/usr/bin/mmdc")
+  )
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
