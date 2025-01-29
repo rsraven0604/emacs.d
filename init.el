@@ -138,8 +138,6 @@
 
 (use-package org-roam
   :ensure t
-  :custom
-  (org-roam-directory (file-truename "~/Dropbox/roam/"))
   :bind (("C-c n l" . org-roam-buffer-toggle)
          ("C-c n f" . org-roam-node-find)
          ("C-c n g" . org-roam-graph)
@@ -149,8 +147,12 @@
          ("C-c n j" . org-roam-dailies-capture-today))
   :config
   (setq org-roam-database-connector 'sqlite-builtin)
+  (setq org-roam-directory (file-truename "~/Dropbox/roam"))
   ;; If you're using a vertical completion framework, you might want a more informative completion interface
   (setq org-roam-node-display-template (concat "${title:*} " (propertize "${tags:10}" 'face 'org-tag)))
+  (setq org-roam-db-location "~/.org-roam.db")
+  (setq org-roam-index-file "~/Dropbox/roam/Index.org")
+  
   (org-roam-db-autosync-mode)
   ;; If using org-roam-protocol
   (require 'org-roam-protocol))
