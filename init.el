@@ -10,10 +10,13 @@
 (add-to-list 'package-archives '("gnu" . "https://elpa.gnu.org/packages/") t)
 (package-initialize)
 
+;; 手動で更新したければ、 M-x package-refresh-contents
+
 ;; use-packageのインストール
 (unless (package-installed-p 'use-package)
   (package-refresh-contents)
   (package-install 'use-package))
+
 
 (require 'use-package)
 
@@ -42,7 +45,14 @@
 (global-set-key "\C-h" `delete-backward-char)
 
 ;;; アクティブウィンドウ切り替えを C-tに設定
-(global-set-key "\C-t" `other-window)
+(defun other-window-or-split (val)
+  (interactive)
+  (when (one-window-p)
+    (split-window-vertically) ;split vertically
+  )
+  (other-window val))
+(global-set-key (kbd "<C-tab>") (lambda () (interactive) (`other-window-or-split 1)))
+(global-set-key (kbd "<C-S-tab>") (lambda () (interactive) (`other-window-or-split -1)))
 
 ;; シンタックスハイライト
 (global-font-lock-mode t)
@@ -53,17 +63,139 @@
 
 ;; テーマの設定
 ;; use-package の使い方 https://qiita.com/kai2nenobu/items/5dfae3767514584f5220
-(use-package modus-themes
+(use-package zenburn-theme
   :ensure t
+  :preface
+  (setq zenburn-use-variable-pitch t)
+  (setq zenburn-scale-org-headlines t)
+  (setq zenburn-scale-outline-headlines t)
+  ;; 全体的に少し暗くする
+  (setq zenburn-override-colors-alist
+        '(
+        ("zenburn-bg-2" . "#040403")          
+        ("zenburn-bg-1" . "#080806")          
+        ("zenburn-bg-08" . "#121210")          
+        ("zenburn-bg-05" . "#121210")
+        ("zenburn-bg"    . "#151511")
+        ("zenburn-bg+0"  . "#161613")
+        ("zenburn-bg+04" . "#171714")
+        ("zenburn-bg+05" . "#181816")
+        ("zenburn-bg+1"  . "#1F1F1C")
+        ("zenburn-bg+2"  . "#2F2F24")
+        ("zenburn-bg+3"  . "#3F3F30")
+        ("zenburn-fg"    . "#DCDCCC")
+        ("zenburn-fg+1"  . "#E0DCC0")
+        ("zenburn-fg+2"  . "#E4DCC8")))
+
   :load-path "themes"
   :init
   :config
-  (load-theme 'modus-vivendi t)
-  )
+  (load-theme 'zenburn t))
 
 ;; 背景透過
-(set-frame-parameter nil 'alpha-background 75)
-(add-to-list 'default-frame-alist '(alpha-background . 75))
+(set-frame-parameter nil 'alpha-background 85)
+(add-to-list 'default-frame-alist '(alpha-background . 85))
+
+;; Treemacsの設定
+(use-package treemacs
+  :ensure t
+  :defer t
+  :init
+  (with-eval-after-load 'winum
+    (define-key winum-keymap (kbd "M-0") #'treemacs-select-window))
+  :config
+  (progn
+    (setq treemacs-collapse-dirs                   (if treemacs-python-executable 3 0)
+          treemacs-deferred-git-apply-delay        0.5
+          treemacs-directory-name-transformer      #'identity
+          treemacs-display-in-side-window          t
+          treemacs-eldoc-display                   'simple
+          treemacs-file-event-delay                2000
+          treemacs-file-extension-regex            treemacs-last-period-regex-value
+          treemacs-file-follow-delay               0.2
+          treemacs-file-name-transformer           #'identity
+          treemacs-follow-after-init               t
+          treemacs-expand-after-init               t
+          treemacs-find-workspace-method           'find-for-file-or-pick-first
+          treemacs-git-command-pipe                ""
+          treemacs-goto-tag-strategy               'refetch-index
+          treemacs-header-scroll-indicators        '(nil . "^^^^^^")
+          treemacs-hide-dot-git-directory          t
+          treemacs-indentation                     2
+          treemacs-indentation-string              " "
+          treemacs-is-never-other-window           nil
+          treemacs-max-git-entries                 5000
+          treemacs-missing-project-action          'ask
+          treemacs-move-files-by-mouse-dragging    t
+          treemacs-move-forward-on-expand          nil
+          treemacs-no-png-images                   nil
+          treemacs-no-delete-other-windows         t
+          treemacs-project-follow-cleanup          nil
+          treemacs-persist-file                    (expand-file-name ".cache/treemacs-persist" user-emacs-directory)
+          treemacs-position                        'left
+          treemacs-read-string-input               'from-child-frame
+          treemacs-recenter-distance               0.1
+          treemacs-recenter-after-file-follow      nil
+          treemacs-recenter-after-tag-follow       nil
+          treemacs-recenter-after-project-jump     'always
+          treemacs-recenter-after-project-expand   'on-distance
+          treemacs-litter-directories              '("/node_modules" "/.venv" "/.cask")
+          treemacs-project-follow-into-home        nil
+          treemacs-show-cursor                     nil
+          treemacs-show-hidden-files               t
+          treemacs-silent-filewatch                nil
+          treemacs-silent-refresh                  nil
+          treemacs-sorting                         'alphabetic-asc
+          treemacs-select-when-already-in-treemacs 'move-back
+          treemacs-space-between-root-nodes        t
+          treemacs-tag-follow-cleanup              t
+          treemacs-tag-follow-delay                1.5
+          treemacs-text-scale                      nil
+          treemacs-user-mode-line-format           nil
+          treemacs-user-header-line-format         nil
+          treemacs-wide-toggle-width               70
+          treemacs-width                           35
+          treemacs-width-increment                 1
+          treemacs-width-is-initially-locked       t
+          treemacs-workspace-switch-cleanup        nil)
+
+    ;; The default width and height of the icons is 22 pixels. If you are
+    ;; using a Hi-DPI display, uncomment this to double the icon size.
+    ;;(treemacs-resize-icons 44)
+
+    (treemacs-follow-mode t)
+    (treemacs-filewatch-mode t)
+    (treemacs-fringe-indicator-mode 'always)
+    (when treemacs-python-executable
+      (treemacs-git-commit-diff-mode t))
+
+    (pcase (cons (not (null (executable-find "git")))
+                 (not (null treemacs-python-executable)))
+      (`(t . t)
+       (treemacs-git-mode 'deferred))
+      (`(t . _)
+       (treemacs-git-mode 'simple)))
+
+    (treemacs-hide-gitignored-files-mode nil))
+  :bind
+  (:map global-map
+        ("M-0"       . treemacs-select-window)
+        ("C-x t 1"   . treemacs-delete-other-windows)
+        ("C-x t t"   . treemacs)
+        ("C-x t d"   . treemacs-select-directory)
+        ("C-x t B"   . treemacs-bookmark)
+        ("C-x t C-t" . treemacs-find-file)
+        ("C-x t M-t" . treemacs-find-tag)))
+
+(use-package treemacs-icons-dired
+  :hook (dired-mode . treemacs-icons-dired-enable-once)
+  :ensure t)
+
+(use-package treemacs-magit
+  :after (treemacs magit)
+  :ensure t)
+
+(treemacs-start-on-boot)
 
 ;; org-mode, org-agendaの設定
 ;; 参考 https://qiita.com/mamo3gr/items/6324b695131fef9b6031
@@ -191,6 +323,46 @@
   :config
   (add-hook 'org-mode-hook (lambda () (org-superstar-mode 1))))
 
+;; GitHub Copilot 連携 https://github.com/copilot-emacs/copilot.el
+;; Installation
+;; Mx copilot-install-server
+;; M-x copilot-login
+;; 確認 M-x copilot-diagnose (NotAuthorized だったらサブスクが有効でない）
+(use-package copilot
+  :vc (:url "https://github.com/copilot-emacs/copilot.el"
+            :rev :newest
+            :branch "main")
+  :hook (prog-mode . copilot-mode)
+  :init
+  (setq copilot-indent-offset-warning-disable t) ;; インデントの警告を無効化
+  :bind (:map copilot-completion-map
+              ("C-e" . copilot-accept-completion)
+              ("M-f" . copilot-accept-completion-by-word)
+              ("C-M-f" . copilot-accept-completion-by-paragraph)
+              ("M-n" . copilot-accept-completion-by-line)
+              ("C-M-n" . copilot-next-completion)
+              ("C-M-p" . copilot-previous-completion))
+  (:map copilot-mode-map
+   ("M-i" . copilot-complete)
+   )
+  )
+
+;; pythonの設定
+(use-package elpy
+  :ensure t
+  :init
+  (elpy-enable)
+  (setq python-shell-interpreter "ipython"
+        python-shell-interpreter-args "-i --simple-prompt"))
+
+;; lspによる補完
+;; (use-package lsp-mode
+;;     :ensure t
+;;     :commands lsp
+;;     :hook (python-mode . lsp)
+;;     :config
+;;     (lsp-enable-which-key-integration t))
+
 ;; バージョン管理関連
 ;; magit https://github.com/magit/magit
 (use-package magit
@@ -211,8 +383,13 @@
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(package-selected-packages
-   '(git-gutter leuven-theme magit mermaid-mode modus-theme modus-themes
-                ob-mermaid org-modern org-roam)))
+   '(copilot elpy emacs-material-theme git-gutter leuven-theme
+             markdown-mode material-theme mermaid-mode modus-themes
+             nord-theme ob-mermaid org-modern org-roam spinner
+             treemacs-icons-dired treemacs-magit zenburn-theme))
+ '(package-vc-selected-packages
+   '((copilot :url "https://github.com/copilot-emacs/copilot.el" :branch
+              "main"))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
