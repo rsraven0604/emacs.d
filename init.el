@@ -191,14 +191,18 @@
   :config
   (add-hook 'org-mode-hook (lambda () (org-superstar-mode 1))))
 
+;; バージョン管理関連
 ;; magit https://github.com/magit/magit
 (use-package magit
   :ensure t
   :bind (("C-x g" . magit-status)
          ("C-x M-g" . magit-dispatch-popup)))
 
-
-
+;; git-gutter https://github.com/emacsorphanage/git-gutter
+(use-package git-gutter
+  :ensure t
+  :config
+  (global-git-gutter-mode +1))
 
 ;; 以下、自動生成行
 (custom-set-variables
@@ -207,8 +211,8 @@
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(package-selected-packages
-   '(leuven-theme magit mermaid-mode modus-theme modus-themes ob-mermaid
-                  org-modern org-roam)))
+   '(git-gutter leuven-theme magit mermaid-mode modus-theme modus-themes
+                ob-mermaid org-modern org-roam)))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
