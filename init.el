@@ -1,12 +1,7 @@
-
 ;; 余計なファイルを生成しない
 (setq make-backup-files nil)
 (setq auto-save-default nil)
 (setq auto-save-list-file-prefix nil)
-
-
-;; C-x C-c で閉じる時に、ワンクッション置く
-(setq confirm-kill-emacs 'y-or-n-p)
 
 ;; パッケージリポジトリの設定
 (require 'package)
@@ -28,7 +23,6 @@
 (tool-bar-mode -1)
 (menu-bar-mode -1)
 
-
 (global-display-line-numbers-mode t)   ;; 行番号を表示
 
 ;; インデント設定
@@ -37,7 +31,8 @@
 (setq indent-line-function 'insert-tab)
 
 ;; フォント設定
-(set-face-attribute 'default nil :family "Monaspace Xenon Var" :height 140)
+(set-face-attribute 'default nil :family "Monaspace Xenon Var" :height 120)
+(setq-default line-spacing  0.2)
 
 ;; ウィンドウサイズ指定
 (set-frame-size (selected-frame) 120 48)
@@ -57,12 +52,13 @@
 
 
 ;; テーマの設定
-(use-package leuven-theme
+;; use-package の使い方 https://qiita.com/kai2nenobu/items/5dfae3767514584f5220
+(use-package modus-themes
   :ensure t
   :load-path "themes"
   :init
   :config
-  (load-theme 'leuven-dark t)
+  (load-theme 'modus-vivendi t)
   )
 
 ;; 背景透過
@@ -89,6 +85,7 @@
   (setq org-todo-keywords
         '((sequence "TASK(t)" "WAIT(w)" "|" "DONE(d)" "ABORT(a)" "SOMEDAY(s)")))
   (setq org-tag-alist '(("PROJECT" . ?p) ("MEMO" . ?m) ("PETIT" . ?t)))
+  (setq org-startup-indented t)
   (setq org-capture-templates
         '(("t" "Task" entry (file+headline org-default-notes-file "inbox")
            "** TASK %?\n   CREATED: %U\n")
@@ -111,6 +108,7 @@
    ("M-p" . org-backward-same-level)))
 
 (use-package org-agenda
+  :defer t
   :commands org-agenda
   :config
   (setq org-agenda-custom-commands
@@ -137,6 +135,7 @@
         ("S" . org-save-all-org-buffers)))
 
 (use-package org-roam
+  :defer t
   :ensure t
   :bind (("C-c n l" . org-roam-buffer-toggle)
          ("C-c n f" . org-roam-node-find)
@@ -158,6 +157,7 @@
   (require 'org-roam-protocol))
 
 (use-package ob-mermaid
+  :defer t
   :ensure t
   :config
   (org-babel-do-load-languages
@@ -170,16 +170,49 @@
   :config
   (setq mermaid-output-format "/usr/bin/mmdc")
   )
+
+(use-package org-modern
+  :ensure t
+  :config
+  (with-eval-after-load 'org (global-org-modern-mode))
+  )
+
+(use-package org-indent)
+
+(use-package org-modern-indent
+  :load-path "~/repos/org-modern-indent/"
+  :config
+  (add-hook 'org-mode-hook #'org-indent-mode)
+  (add-hook 'org-mode-hook #'org-modern-indent-mode 90))
+
+;; org-superstar https://github.com/integral-dw/org-superstar-mode
+(use-package org-superstar
+  :load-path "~/repos/org-superstar-mode/"
+  :config
+  (add-hook 'org-mode-hook (lambda () (org-superstar-mode 1))))
+
+;; magit https://github.com/magit/magit
+(use-package magit
+  :ensure t
+  :bind (("C-x g" . magit-status)
+         ("C-x M-g" . magit-dispatch-popup)))
+
+
+
+
+;; 以下、自動生成行
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(package-selected-packages
-   '(leuven-theme kaolin-themes cyberpunk-theme ob-mermaid monokai-theme company)))
+   '(leuven-theme magit mermaid-mode modus-theme modus-themes ob-mermaid
+                  org-modern org-roam)))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  )
+
