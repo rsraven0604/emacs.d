@@ -97,6 +97,13 @@
 (set-frame-parameter nil 'alpha-background 85)
 (add-to-list 'default-frame-alist '(alpha-background . 85))
 
+;; バージョン管理関連
+;; magit https://github.com/magit/magit
+(use-package magit
+  :ensure t
+  :bind (("C-x g" . magit-status)
+         ("C-x M-g" . magit-dispatch-popup)))
+
 ;; Treemacsの設定
 (use-package treemacs
   :ensure t
@@ -187,6 +194,16 @@
         ("C-x t B"   . treemacs-bookmark)
         ("C-x t C-t" . treemacs-find-file)
         ("C-x t M-t" . treemacs-find-tag)))
+
+;; インストールする前に、以下コマンドでフォントをインストールする必要がある。
+;; yay -S ttf-nerd-fonts-symbols
+(use-package treemacs-nerd-icons
+  :after treemacs
+  :ensure t
+  :config
+  (treemacs-load-theme "nerd-icons")
+  (setq treemacs-nerd-icons-scale-factor 1.0)
+  (setq treemacs-nerd-icons-hl-face 'treemacs-root-face))
 
 (use-package treemacs-icons-dired
   :hook (dired-mode . treemacs-icons-dired-enable-once)
@@ -336,6 +353,7 @@
   :hook (prog-mode . copilot-mode)
   :init
   (setq copilot-indent-offset-warning-disable t) ;; インデントの警告を無効化
+  (setq copilot-max-char-warning-disabled t) ;; 最大文字数の警告を無効化
   :bind (:map copilot-completion-map
               ("C-e" . copilot-accept-completion)
               ("M-f" . copilot-accept-completion-by-word)
@@ -345,8 +363,7 @@
               ("C-M-p" . copilot-previous-completion))
   (:map copilot-mode-map
    ("M-i" . copilot-complete)
-   )
-  )
+   ))
 
 ;; 基本インクリメンタル補完システム
 (use-package vertico
@@ -397,19 +414,14 @@
         python-shell-interpreter-args "-i --simple-prompt"))
 
 ;; lspによる補完
-;; (use-package lsp-mode
-;;     :ensure t
-;;     :commands lsp
-;;     :hook (python-mode . lsp)
-;;     :config
-;;     (lsp-enable-which-key-integration t))
+(use-package lsp-mode
+    :ensure t
+    :commands lsp
+    :hook (python-mode . lsp)
+    :config
+    (lsp-enable-which-key-integration t))
 
-;; バージョン管理関連
-;; magit https://github.com/magit/magit
-(use-package magit
-  :ensure t
-  :bind (("C-x g" . magit-status)
-         ("C-x M-g" . magit-dispatch-popup)))
+
 
 ;; git-gutter https://github.com/emacsorphanage/git-gutter
 (use-package git-gutter
@@ -423,7 +435,12 @@
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(package-selected-packages nil)
+ '(package-selected-packages
+   '(consult copilot elpy git-gutter leuven-theme lsp-mode marginalia
+             markdown-mode material-theme mermaid-mode modus-themes
+             nord-theme ob-mermaid orderless org-modern org-roam
+             spinner treemacs-icons-dired treemacs-magit
+             treemacs-nerd-icons vertico zenburn-theme))
  '(package-vc-selected-packages
    '((copilot :url "https://github.com/copilot-emacs/copilot.el" :branch
               "main"))))
