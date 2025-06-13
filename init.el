@@ -1,3 +1,4 @@
+
 ;; 余計なファイルを生成しない
 (setq make-backup-files nil)
 (setq auto-save-default nil)
@@ -48,11 +49,11 @@
 (defun other-window-or-split (val)
   (interactive)
   (when (one-window-p)
-    (split-window-vertically) ;split vertically
+    (split-window-horizontally)
   )
   (other-window val))
-(global-set-key (kbd "<C-tab>") (lambda () (interactive) (`other-window-or-split 1)))
-(global-set-key (kbd "<C-S-tab>") (lambda () (interactive) (`other-window-or-split -1)))
+(global-set-key "\C-t" (lambda () (interactive) (other-window-or-split 1)))
+
 
 ;; シンタックスハイライト
 (global-font-lock-mode t)
@@ -123,7 +124,7 @@
           treemacs-hide-dot-git-directory          t
           treemacs-indentation                     2
           treemacs-indentation-string              " "
-          treemacs-is-never-other-window           nil
+          treemacs-is-never-other-window           t
           treemacs-max-git-entries                 5000
           treemacs-missing-project-action          'ask
           treemacs-move-files-by-mouse-dragging    t
@@ -131,7 +132,7 @@
           treemacs-no-png-images                   nil
           treemacs-no-delete-other-windows         t
           treemacs-project-follow-cleanup          nil
-          treemacs-persist-file                    (expand-file-name ".cache/treemacs-persist" user-emacs-directory)
+          treemacs-persist-file                    (expand-file-name ".cache/treemacs-persist" user-emacs-directory) 
           treemacs-position                        'left
           treemacs-read-string-input               'from-child-frame
           treemacs-recenter-distance               0.1
@@ -347,6 +348,46 @@
    )
   )
 
+;; 基本インクリメンタル補完システム
+(use-package vertico
+  :ensure t
+  :init
+  (vertico-mode))
+
+;; 補助情報の表示（marginalia）
+(use-package marginalia
+  :ensure t
+  :after vertico
+  :init
+  (marginalia-mode))
+
+;; より強力なコマンドセット
+(use-package consult
+  :ensure t
+  :bind
+  (("C-s" . consult-line)
+   ("C-x b" . consult-buffer)  ;; バッファ・recentf・bookmarks・project files などを統合的に検索
+   ("C-x C-r" . consult-recent-file)
+   ("M-y" . consult-yank-pop))) ;; kill-ring からの検索・挿入
+
+;; 補完スタイルをあいまい検索に変更
+(use-package orderless
+  :ensure t
+  :init
+  (setq completion-styles '(orderless)
+        completion-category-defaults nil))
+
+;; recentf による最近使ったファイル一覧
+(use-package recentf
+  :ensure nil ;; built-in パッケージなので `:ensure` は不要
+  :init
+  (recentf-mode 1)
+  (setq recentf-max-menu-items 100
+        recentf-max-saved-items 200
+        recentf-auto-cleanup 'never))
+
+
+
 ;; pythonの設定
 (use-package elpy
   :ensure t
@@ -382,11 +423,7 @@
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(package-selected-packages
-   '(copilot elpy emacs-material-theme git-gutter leuven-theme
-             markdown-mode material-theme mermaid-mode modus-themes
-             nord-theme ob-mermaid org-modern org-roam spinner
-             treemacs-icons-dired treemacs-magit zenburn-theme))
+ '(package-selected-packages nil)
  '(package-vc-selected-packages
    '((copilot :url "https://github.com/copilot-emacs/copilot.el" :branch
               "main"))))
