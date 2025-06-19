@@ -73,7 +73,7 @@
   ;; 全体的に少し暗くする
   (setq zenburn-override-colors-alist
         '(
-        ("zenburn-bg-2" . "#040403")          
+        ("zenburn-bg-2" . "#040403")
         ("zenburn-bg-1" . "#080806")          
         ("zenburn-bg-08" . "#121210")          
         ("zenburn-bg-05" . "#121210")
@@ -403,15 +403,12 @@
         recentf-max-saved-items 200
         recentf-auto-cleanup 'never))
 
-
-
 ;; pythonの設定
-(use-package elpy
+(use-package pyvenv
   :ensure t
-  :init
-  (elpy-enable)
-  (setq python-shell-interpreter "ipython"
-        python-shell-interpreter-args "-i --simple-prompt"))
+  :config
+  (setenv "WORKON_HOME" "~/.virtualenvs")
+  (pyvenv-mode 1)) 
 
 ;; lspによる補完
 (use-package lsp-mode
@@ -419,8 +416,39 @@
     :commands lsp
     :hook (python-mode . lsp)
     :config
+    (setq lsp-enable-links nil) ;; リンクを無効化
     (lsp-enable-which-key-integration t))
 
+;; flycheck(静的解析ツール)の設定
+(use-package flycheck
+  :ensure t
+  :init
+  (global-flycheck-mode))
+
+;; blacken(コードフォーマッタ)の設定
+(use-package blacken
+  :ensure t
+  :hook (python-mode . blacken-mode)
+  :config
+  (setq blacken-line-length '99) ;; 行の長さを99文字に設定
+  (setq blacken-fast-unsafe t)) ;; 安全でない高速モードを有効化
+
+;; 補完機能の強化
+(use-package company
+  :ensure t
+  :init
+  (global-company-mode)
+  (setq company-idle-delay 0.2) ;; 補完の遅延時間を0.2秒に設定
+  (setq company-minimum-prefix-length 1) ;; 最小のプレフィックス長を1に設定
+  (setq company-selection-wrap-around t) ;; 選択肢を循環させる
+  (setq company-tooltip-align-annotations t)) ;; ツールチップのアノテーションを揃える
+
+(use-package company-box
+  :ensure t
+  :hook (company-mode . company-box-mode)
+  :config
+  ;;(setq company-box-icons-alist 'company-box-icons-all-the-icons) ;; アイコンを all-the-icons に設定
+  (setq company-box-show-single-candidate t)) ;; 単一候補のときもアイコンを表示
 
 
 ;; git-gutter https://github.com/emacsorphanage/git-gutter
@@ -435,12 +463,7 @@
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(package-selected-packages
-   '(consult copilot elpy git-gutter leuven-theme lsp-mode marginalia
-             markdown-mode material-theme mermaid-mode modus-themes
-             nord-theme ob-mermaid orderless org-modern org-roam
-             spinner treemacs-icons-dired treemacs-magit
-             treemacs-nerd-icons vertico zenburn-theme))
+ '(package-selected-packages nil)
  '(package-vc-selected-packages
    '((copilot :url "https://github.com/copilot-emacs/copilot.el" :branch
               "main"))))
