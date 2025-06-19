@@ -1,469 +1,419 @@
-
 ;; 余計なファイルを生成しない
-(setq make-backup-files nil)
-(setq auto-save-default nil)
-(setq auto-save-list-file-prefix nil)
+(leaf files
+  :config
+  (setq make-backup-files nil)
+  (setq auto-save-default nil)
+  (setq auto-save-list-file-prefix nil))
 
 ;; パッケージリポジトリの設定
-(require 'package)
-;;(add-to-list 'package-archives '("melpa-stable" . "https://stable.melpa.org/packages/") t)
-(add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
-(add-to-list 'package-archives '("gnu" . "https://elpa.gnu.org/packages/") t)
-(package-initialize)
+(leaf package
+  :config
+  (add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
+  (add-to-list 'package-archives '("gnu" . "https://elpa.gnu.org/packages/") t)
+  (package-initialize))
 
-;; 手動で更新したければ、 M-x package-refresh-contents
+;; leafの設定
+(leaf leaf
+  :ensure t
+  :require t)
 
-;; use-packageのインストール
-(unless (package-installed-p 'use-package)
-  (package-refresh-contents)
-  (package-install 'use-package))
+;; leaf-keywordsの設定（:ensureなどを使うため）
+(leaf leaf-keywords
+  :ensure t
+  :require t
+  :config
+  (leaf-keywords-init))
 
-
-(require 'use-package)
-
-;; いらないUIを消す
-(setq inhibit-startup-message t)       ;; スタートアップメッセージを非表示
-(scroll-bar-mode -1)
-(tool-bar-mode -1)
-(menu-bar-mode -1)
-
-(global-display-line-numbers-mode t)   ;; 行番号を表示
+;; UI設定
+(leaf ui-config
+  :config
+  (setq inhibit-startup-message t)
+  (scroll-bar-mode -1)
+  (tool-bar-mode -1)
+  (menu-bar-mode -1)
+  (global-display-line-numbers-mode t)
+  (global-font-lock-mode t)
+  (setq show-trailing-whitespace t))
 
 ;; インデント設定
-(setq-default indent-tabs-mode nil)  ;; タブをスペースに変換
-(setq-default tab-width 4)           ;; タブ幅を4に設定
-(setq indent-line-function 'insert-tab)
+(leaf indentation
+  :config
+  (setq-default indent-tabs-mode nil)
+  (setq-default tab-width 4)
+  (setq indent-line-function 'insert-tab))
 
 ;; フォント設定
-(set-face-attribute 'default nil :family "Monaspace Xenon Var" :height 120)
-(setq-default line-spacing  0.2)
+(leaf font-config
+  :config
+  (set-face-attribute 'default nil :family "Monaspace Xenon Var" :height 120)
+  (setq-default line-spacing 0.2)
+  (set-frame-size (selected-frame) 120 48))
 
-;; ウィンドウサイズ指定
-(set-frame-size (selected-frame) 120 48)
-
-;; キーバインド
-;;; 削除ボタンを C-hに設定
-(global-set-key "\C-h" `delete-backward-char)
-
-;;; アクティブウィンドウ切り替えを C-tに設定
-(defun other-window-or-split (val)
-  (interactive)
-  (when (one-window-p)
-    (split-window-horizontally)
-  )
-  (other-window val))
-(global-set-key "\C-t" (lambda () (interactive) (other-window-or-split 1)))
-
-
-;; シンタックスハイライト
-(global-font-lock-mode t)
-
-;; 行末の空白を可視化
-(setq show-trailing-whitespace t)
-
+;; キーバインド設定
+(leaf keybindings
+  :config
+  (defun other-window-or-split (val)
+    (interactive)
+    (when (one-window-p)
+      (split-window-horizontally))
+    (other-window val))
+  :bind
+  (("C-h" . delete-backward-char)
+   ("C-t" . (lambda () (interactive) (other-window-or-split 1)))))
 
 ;; テーマの設定
-;; use-package の使い方 https://qiita.com/kai2nenobu/items/5dfae3767514584f5220
-(use-package zenburn-theme
+(leaf zenburn-theme
   :ensure t
-  :preface
-  (setq zenburn-use-variable-pitch t)
-  (setq zenburn-scale-org-headlines t)
-  (setq zenburn-scale-outline-headlines t)
-  ;; 全体的に少し暗くする
-  (setq zenburn-override-colors-alist
-        '(
-        ("zenburn-bg-2" . "#040403")
-        ("zenburn-bg-1" . "#080806")          
-        ("zenburn-bg-08" . "#121210")          
-        ("zenburn-bg-05" . "#121210")
-        ("zenburn-bg"    . "#151511")
-        ("zenburn-bg+0"  . "#161613")
-        ("zenburn-bg+04" . "#171714")
-        ("zenburn-bg+05" . "#181816")
-        ("zenburn-bg+1"  . "#1F1F1C")
-        ("zenburn-bg+2"  . "#2F2F24")
-        ("zenburn-bg+3"  . "#3F3F30")
-        ("zenburn-fg"    . "#DCDCCC")
-        ("zenburn-fg+1"  . "#E0DCC0")
-        ("zenburn-fg+2"  . "#E4DCC8")))
-
-  :load-path "themes"
-  :init
+  :pre-setq
+  ((zenburn-use-variable-pitch . t)
+   (zenburn-scale-org-headlines . t)
+   (zenburn-scale-outline-headlines . t)
+   (zenburn-override-colors-alist . 
+    '(("zenburn-bg-2" . "#040403")
+      ("zenburn-bg-1" . "#080806")          
+      ("zenburn-bg-08" . "#121210")          
+      ("zenburn-bg-05" . "#121210")
+      ("zenburn-bg"    . "#151511")
+      ("zenburn-bg+0"  . "#161613")
+      ("zenburn-bg+04" . "#171714")
+      ("zenburn-bg+05" . "#181816")
+      ("zenburn-bg+1"  . "#1F1F1C")
+      ("zenburn-bg+2"  . "#2F2F24")
+      ("zenburn-bg+3"  . "#3F3F30")
+      ("zenburn-fg"    . "#DCDCCC")
+      ("zenburn-fg+1"  . "#E0DCC0")
+      ("zenburn-fg+2"  . "#E4DCC8"))))
   :config
   (load-theme 'zenburn t))
 
 ;; 背景透過
-(set-frame-parameter nil 'alpha-background 85)
-(add-to-list 'default-frame-alist '(alpha-background . 85))
+(leaf transparency
+  :config
+  (set-frame-parameter nil 'alpha-background 85)
+  (add-to-list 'default-frame-alist '(alpha-background . 85)))
 
-;; バージョン管理関連
-;; magit https://github.com/magit/magit
-(use-package magit
+;; magit
+(leaf magit
   :ensure t
   :bind (("C-x g" . magit-status)
          ("C-x M-g" . magit-dispatch-popup)))
 
-;; Treemacsの設定
-(use-package treemacs
+;; Treemacs
+(leaf treemacs
   :ensure t
-  :defer t
-  :init
-  (with-eval-after-load 'winum
-    (define-key winum-keymap (kbd "M-0") #'treemacs-select-window))
   :config
-  (progn
-    (setq treemacs-collapse-dirs                   (if treemacs-python-executable 3 0)
-          treemacs-deferred-git-apply-delay        0.5
-          treemacs-directory-name-transformer      #'identity
-          treemacs-display-in-side-window          t
-          treemacs-eldoc-display                   'simple
-          treemacs-file-event-delay                2000
-          treemacs-file-extension-regex            treemacs-last-period-regex-value
-          treemacs-file-follow-delay               0.2
-          treemacs-file-name-transformer           #'identity
-          treemacs-follow-after-init               t
-          treemacs-expand-after-init               t
-          treemacs-find-workspace-method           'find-for-file-or-pick-first
-          treemacs-git-command-pipe                ""
-          treemacs-goto-tag-strategy               'refetch-index
-          treemacs-header-scroll-indicators        '(nil . "^^^^^^")
-          treemacs-hide-dot-git-directory          t
-          treemacs-indentation                     2
-          treemacs-indentation-string              " "
-          treemacs-is-never-other-window           t
-          treemacs-max-git-entries                 5000
-          treemacs-missing-project-action          'ask
-          treemacs-move-files-by-mouse-dragging    t
-          treemacs-move-forward-on-expand          nil
-          treemacs-no-png-images                   nil
-          treemacs-no-delete-other-windows         t
-          treemacs-project-follow-cleanup          nil
-          treemacs-persist-file                    (expand-file-name ".cache/treemacs-persist" user-emacs-directory) 
-          treemacs-position                        'left
-          treemacs-read-string-input               'from-child-frame
-          treemacs-recenter-distance               0.1
-          treemacs-recenter-after-file-follow      nil
-          treemacs-recenter-after-tag-follow       nil
-          treemacs-recenter-after-project-jump     'always
-          treemacs-recenter-after-project-expand   'on-distance
-          treemacs-litter-directories              '("/node_modules" "/.venv" "/.cask")
-          treemacs-project-follow-into-home        nil
-          treemacs-show-cursor                     nil
-          treemacs-show-hidden-files               t
-          treemacs-silent-filewatch                nil
-          treemacs-silent-refresh                  nil
-          treemacs-sorting                         'alphabetic-asc
-          treemacs-select-when-already-in-treemacs 'move-back
-          treemacs-space-between-root-nodes        t
-          treemacs-tag-follow-cleanup              t
-          treemacs-tag-follow-delay                1.5
-          treemacs-text-scale                      nil
-          treemacs-user-mode-line-format           nil
-          treemacs-user-header-line-format         nil
-          treemacs-wide-toggle-width               70
-          treemacs-width                           35
-          treemacs-width-increment                 1
-          treemacs-width-is-initially-locked       t
-          treemacs-workspace-switch-cleanup        nil)
-
-    ;; The default width and height of the icons is 22 pixels. If you are
-    ;; using a Hi-DPI display, uncomment this to double the icon size.
-    ;;(treemacs-resize-icons 44)
-
-    (treemacs-follow-mode t)
-    (treemacs-filewatch-mode t)
-    (treemacs-fringe-indicator-mode 'always)
-    (when treemacs-python-executable
-      (treemacs-git-commit-diff-mode t))
-
-    (pcase (cons (not (null (executable-find "git")))
-                 (not (null treemacs-python-executable)))
-      (`(t . t)
-       (treemacs-git-mode 'deferred))
-      (`(t . _)
-       (treemacs-git-mode 'simple)))
-
-    (treemacs-hide-gitignored-files-mode nil))
+  (setq treemacs-collapse-dirs (if treemacs-python-executable 3 0))
+  (setq treemacs-deferred-git-apply-delay 0.5)
+  (setq treemacs-directory-name-transformer #'identity)
+  (setq treemacs-display-in-side-window t)
+  (setq treemacs-eldoc-display 'simple)
+  (setq treemacs-file-event-delay 2000)
+  (setq treemacs-file-extension-regex treemacs-last-period-regex-value)
+  (setq treemacs-file-follow-delay 0.2)
+  (setq treemacs-file-name-transformer #'identity)
+  (setq treemacs-follow-after-init t)
+  (setq treemacs-expand-after-init t)
+  (setq treemacs-find-workspace-method 'find-for-file-or-pick-first)
+  (setq treemacs-git-command-pipe "")
+  (setq treemacs-goto-tag-strategy 'refetch-index)
+  (setq treemacs-header-scroll-indicators '(nil . "^^^^^^"))
+  (setq treemacs-hide-dot-git-directory t)
+  (setq treemacs-indentation 2)
+  (setq treemacs-indentation-string " ")
+  (setq treemacs-is-never-other-window t)
+  (setq treemacs-max-git-entries 5000)
+  (setq treemacs-missing-project-action 'ask)
+  (setq treemacs-move-files-by-mouse-dragging t)
+  (setq treemacs-move-forward-on-expand nil)
+  (setq treemacs-no-png-images nil)
+  (setq treemacs-no-delete-other-windows t)
+  (setq treemacs-project-follow-cleanup nil)
+  (setq treemacs-position 'left)
+  (setq treemacs-read-string-input 'from-child-frame)
+  (setq treemacs-recenter-distance 0.1)
+  (setq treemacs-recenter-after-file-follow nil)
+  (setq treemacs-recenter-after-tag-follow nil)
+  (setq treemacs-recenter-after-project-jump 'always)
+  (setq treemacs-recenter-after-project-expand 'on-distance)
+  (setq treemacs-litter-directories '("/node_modules" "/.venv" "/.cask"))
+  (setq treemacs-project-follow-into-home nil)
+  (setq treemacs-show-cursor nil)
+  (setq treemacs-show-hidden-files t)
+  (setq treemacs-silent-filewatch nil)
+  (setq treemacs-silent-refresh nil)
+  (setq treemacs-sorting 'alphabetic-asc)
+  (setq treemacs-select-when-already-in-treemacs 'move-back)
+  (setq treemacs-space-between-root-nodes t)
+  (setq treemacs-tag-follow-cleanup t)
+  (setq treemacs-tag-follow-delay 1.5)
+  (setq treemacs-text-scale nil)
+  (setq treemacs-user-mode-line-format nil)
+  (setq treemacs-user-header-line-format nil)
+  (setq treemacs-wide-toggle-width 70)
+  (setq treemacs-width 35)
+  (setq treemacs-width-increment 1)
+  (setq treemacs-width-is-initially-locked t)
+  (setq treemacs-workspace-switch-cleanup nil)
+  (treemacs-follow-mode t)
+  (treemacs-filewatch-mode t)
+  (treemacs-fringe-indicator-mode 'always)
+  (when treemacs-python-executable
+    (treemacs-git-commit-diff-mode t))
+  (pcase (cons (not (null (executable-find "git")))
+               (not (null treemacs-python-executable)))
+    (`(t . t)
+     (treemacs-git-mode 'deferred))
+    (`(t . _)
+     (treemacs-git-mode 'simple)))
+  (treemacs-hide-gitignored-files-mode nil)
+  (treemacs-start-on-boot)
   :bind
-  (:map global-map
-        ("M-0"       . treemacs-select-window)
-        ("C-x t 1"   . treemacs-delete-other-windows)
-        ("C-x t t"   . treemacs)
-        ("C-x t d"   . treemacs-select-directory)
-        ("C-x t B"   . treemacs-bookmark)
-        ("C-x t C-t" . treemacs-find-file)
-        ("C-x t M-t" . treemacs-find-tag)))
+  (("M-0"       . treemacs-select-window)
+   ("C-x t 1"   . treemacs-delete-other-windows)
+   ("C-x t t"   . treemacs)
+   ("C-x t d"   . treemacs-select-directory)
+   ("C-x t B"   . treemacs-bookmark)
+   ("C-x t C-t" . treemacs-find-file)
+   ("C-x t M-t" . treemacs-find-tag)))
 
-;; インストールする前に、以下コマンドでフォントをインストールする必要がある。
-;; yay -S ttf-nerd-fonts-symbols
-(use-package treemacs-nerd-icons
-  :after treemacs
+;; Treemacs関連プラグイン
+(leaf treemacs-nerd-icons
   :ensure t
+  :after treemacs
   :config
   (treemacs-load-theme "nerd-icons")
   (setq treemacs-nerd-icons-scale-factor 1.0)
   (setq treemacs-nerd-icons-hl-face 'treemacs-root-face))
 
-(use-package treemacs-icons-dired
-  :hook (dired-mode . treemacs-icons-dired-enable-once)
-  :ensure t)
+(leaf treemacs-icons-dired
+  :ensure t
+  :hook (dired-mode . treemacs-icons-dired-enable-once))
 
-(use-package treemacs-magit
-  :after (treemacs magit)
-  :ensure t)
+(leaf treemacs-magit
+  :ensure t
+  :after (treemacs magit))
 
-(treemacs-start-on-boot)
-
-;; org-mode, org-agendaの設定
-;; 参考 https://qiita.com/mamo3gr/items/6324b695131fef9b6031
-(use-package org
-  :commands org-agenda
+;; org-mode設定
+(leaf org
   :mode (("\\.org\\'" . org-mode))
+  :pre-setq
+  ((org-directory . "~/Dropbox/agenda/")
+   (org-agenda-files . '("~/Dropbox/agenda/"))
+   (system-time-locale . "C")
+   (org-hide-leading-stars . t)
+   (org-startup-folded . nil)
+   (org-todo-keywords . '((sequence "TASK(t)" "WAIT(w)" "|" "DONE(d)" "ABORT(a)" "SOMEDAY(s)")))
+   (org-tag-alist . '(("PROJECT" . ?p) ("MEMO" . ?m) ("PETIT" . ?t)))
+   (org-startup-indented . t)
+   (org-capture-templates . 
+    '(("t" "Task" entry (file+headline org-default-notes-file "inbox")
+       "** TASK %?\n   CREATED: %U\n")
+      ("i" "Idea" entry (file+headline org-default-notes-file "idea")
+       "** %?\n   CREATED: %U\n")
+      ("k" "Knowledge" entry (file+headline org-default-notes-file "knowledge")
+       "** %?\n   CREATED: %U\n")))
+   (org-refile-targets . '((org-agenda-files :maxlevel . 1)))
+   (org-log-done . 'time)
+   (org-clock-clocked-in-display . 'frame-title))
   :init
-  (setq org-directory "~/Dropbox/agenda/")
   (setq org-default-notes-file (concat org-directory "main.org"))
-  (setq org-agenda-files (list org-directory))
   (defun my:org-goto-inbox ()
     (interactive)
     (find-file org-default-notes-file))
-  :config
-  (setq system-time-locale "C")  ;; to avoid Japanese in the time stamp
-  (setq org-hide-leading-stars t)
-  (setq org-startup-folded nil)
-  ;; org-capture and enrty
-  (setq org-todo-keywords
-        '((sequence "TASK(t)" "WAIT(w)" "|" "DONE(d)" "ABORT(a)" "SOMEDAY(s)")))
-  (setq org-tag-alist '(("PROJECT" . ?p) ("MEMO" . ?m) ("PETIT" . ?t)))
-  (setq org-startup-indented t)
-  (setq org-capture-templates
-        '(("t" "Task" entry (file+headline org-default-notes-file "inbox")
-           "** TASK %?\n   CREATED: %U\n")
-          ("i" "Idea" entry (file+headline org-default-notes-file "idea")
-           "** %?\n   CREATED: %U\n")
-          ("k" "Knowledge" entry (file+headline org-default-notes-file "knowledge")
-           "** %?\n   CREATED: %U\n")))
-  (setq org-refile-targets '((org-agenda-files :maxlevel . 1)))
-  ;; org-clock
-  (setq org-log-done 'time)  ;; add a time stamp to the task when done
-  (setq org-clock-clocked-in-display 'frame-title)
   :bind
   (("C-c a" . org-agenda)
    ("C-c c" . org-capture)
    ("C-c g" . org-clock-goto)
-   ("C-c i" . my:org-goto-inbox)
-   :map org-mode-map
+   ("C-c i" . my:org-goto-inbox))
+  :bind
+  (:org-mode-map
    ("C-m" . org-return-indent)
    ("M-n" . org-forward-same-level)
    ("M-p" . org-backward-same-level)))
 
-(use-package org-agenda
-  :defer t
+(leaf org-agenda
   :commands org-agenda
+  :pre-setq
+  ((org-agenda-custom-commands . 
+    '(("x" "Unscheduled Tasks" tags-todo
+       "-SCHEDULED>=\"<today>\"-DEADLINE>=\"<today>\"" nil)
+      ("d" "Daily Tasks" agenda ""
+       ((org-agenda-span 1)))))
+   (org-agenda-skip-scheduled-if-done . t)
+   (org-return-follows-link . t)
+   (org-agenda-columns-add-appointments-to-effort-sum . t)
+   (org-agenda-time-grid . 
+    '((daily today require-timed)
+      (0900 1200 1300 2000) "......" "----------------"))
+   (org-columns-default-format . 
+    "%68ITEM(Task) %6Effort(Effort){:} %6CLOCKSUM(Clock){:}"))
   :config
-  (setq org-agenda-custom-commands
-        '(("x" "Unscheduled Tasks" tags-todo
-           "-SCHEDULED>=\"<today>\"-DEADLINE>=\"<today>\"" nil)
-          ("d" "Daily Tasks" agenda ""
-           ((org-agenda-span 1)))))
-  (setq org-agenda-skip-scheduled-if-done t)
-  (setq org-return-follows-link t)  ;; RET to follow link
-  (setq org-agenda-columns-add-appointments-to-effort-sum t)
-  (setq org-agenda-time-grid
-        '((daily today require-timed)
-          (0900 1200 1300 2000) "......" "----------------"))
-  (setq org-columns-default-format
-        "%68ITEM(Task) %6Effort(Effort){:} %6CLOCKSUM(Clock){:}")
   (defadvice org-agenda-switch-to (after org-agenda-close)
     "Close a org-agenda window when RET is hit on the window."
     (progn (delete-other-windows)
            (recenter-top-bottom)))
   (ad-activate 'org-agenda-switch-to)
   :bind
-  (:map org-agenda-mode-map
-        ("s" . org-agenda-schedule)
-        ("S" . org-save-all-org-buffers)))
+  (:org-agenda-mode-map
+   ("s" . org-agenda-schedule)
+   ("S" . org-save-all-org-buffers)))
 
-(use-package org-roam
-  :defer t
+(leaf org-roam
   :ensure t
-  :bind (("C-c n l" . org-roam-buffer-toggle)
-         ("C-c n f" . org-roam-node-find)
-         ("C-c n g" . org-roam-graph)
-         ("C-c n i" . org-roam-node-insert)
-         ("C-c n c" . org-roam-capture)
-         ;; Dailies
-         ("C-c n j" . org-roam-dailies-capture-today))
   :config
   (setq org-roam-database-connector 'sqlite-builtin)
   (setq org-roam-directory (file-truename "~/Dropbox/roam"))
-  ;; If you're using a vertical completion framework, you might want a more informative completion interface
-  (setq org-roam-node-display-template (concat "${title:*} " (propertize "${tags:10}" 'face 'org-tag)))
+  (setq org-roam-node-display-template 
+        (concat "${title:*} " (propertize "${tags:10}" 'face 'org-tag)))
   (setq org-roam-db-location "~/.org-roam.db")
   (setq org-roam-index-file "~/Dropbox/roam/Index.org")
-  
   (org-roam-db-autosync-mode)
-  ;; If using org-roam-protocol
-  (require 'org-roam-protocol))
+  (require 'org-roam-protocol)
+  :bind
+  (("C-c n l" . org-roam-buffer-toggle)
+   ("C-c n f" . org-roam-node-find)
+   ("C-c n g" . org-roam-graph)
+   ("C-c n i" . org-roam-node-insert)
+   ("C-c n c" . org-roam-capture)
+   ("C-c n j" . org-roam-dailies-capture-today)))
 
-(use-package ob-mermaid
-  :defer t
+(leaf ob-mermaid
   :ensure t
+  :pre-setq
+  ((ob-mermaid-cli-path . "/usr/bin/mmdc"))
   :config
   (org-babel-do-load-languages
-    'org-babel-load-languages
-    '((mermaid . t)
-      (scheme . t)))
-  (setq ob-mermaid-cli-path "/usr/bin/mmdc"))
-(use-package mermaid-mode
+   'org-babel-load-languages
+   '((mermaid . t)
+     (scheme . t))))
+
+(leaf mermaid-mode
   :ensure t
-  :config
-  (setq mermaid-output-format "/usr/bin/mmdc")
-  )
+  :pre-setq
+  ((mermaid-output-format . "/usr/bin/mmdc")))
 
-(use-package org-modern
+(leaf org-modern
   :ensure t
-  :config
-  (with-eval-after-load 'org (global-org-modern-mode))
-  )
+  :hook (org-mode . global-org-modern-mode))
 
-(use-package org-indent)
-
-(use-package org-modern-indent
+(leaf org-modern-indent
   :load-path "~/repos/org-modern-indent/"
-  :config
-  (add-hook 'org-mode-hook #'org-indent-mode)
-  (add-hook 'org-mode-hook #'org-modern-indent-mode 90))
+  :hook ((org-mode . org-indent-mode)
+         (org-mode . org-modern-indent-mode)))
 
-;; org-superstar https://github.com/integral-dw/org-superstar-mode
-(use-package org-superstar
+(leaf org-superstar
   :load-path "~/repos/org-superstar-mode/"
-  :config
-  (add-hook 'org-mode-hook (lambda () (org-superstar-mode 1))))
+  :hook (org-mode . org-superstar-mode))
 
-;; GitHub Copilot 連携 https://github.com/copilot-emacs/copilot.el
-;; Installation
-;; Mx copilot-install-server
-;; M-x copilot-login
-;; 確認 M-x copilot-diagnose (NotAuthorized だったらサブスクが有効でない）
-(use-package copilot
+;; GitHub Copilot
+(leaf copilot
   :vc (:url "https://github.com/copilot-emacs/copilot.el"
             :rev :newest
             :branch "main")
   :hook (prog-mode . copilot-mode)
-  :init
-  (setq copilot-indent-offset-warning-disable t) ;; インデントの警告を無効化
-  (setq copilot-max-char-warning-disabled t) ;; 最大文字数の警告を無効化
-  :bind (:map copilot-completion-map
-              ("C-e" . copilot-accept-completion)
-              ("M-f" . copilot-accept-completion-by-word)
-              ("C-M-f" . copilot-accept-completion-by-paragraph)
-              ("M-n" . copilot-accept-completion-by-line)
-              ("C-M-n" . copilot-next-completion)
-              ("C-M-p" . copilot-previous-completion))
-  (:map copilot-mode-map
-   ("M-i" . copilot-complete)
-   ))
+  :pre-setq
+  ((copilot-indent-offset-warning-disable . t)
+   (copilot-max-char-warning-disabled . t))
+  :bind
+  (:copilot-completion-map
+   ("C-e" . copilot-accept-completion)
+   ("M-f" . copilot-accept-completion-by-word)
+   ("C-M-f" . copilot-accept-completion-by-paragraph)
+   ("M-n" . copilot-accept-completion-by-line)
+   ("C-M-n" . copilot-next-completion)
+   ("C-M-p" . copilot-previous-completion))
+  :bind
+  (:copilot-mode-map
+   ("M-i" . copilot-complete)))
 
-;; 基本インクリメンタル補完システム
-(use-package vertico
+;; 補完システム
+(leaf vertico
   :ensure t
-  :init
-  (vertico-mode))
+  :global-minor-mode t)
 
-;; 補助情報の表示（marginalia）
-(use-package marginalia
+(leaf marginalia
   :ensure t
   :after vertico
-  :init
-  (marginalia-mode))
+  :global-minor-mode t)
 
-;; より強力なコマンドセット
-(use-package consult
+(leaf consult
   :ensure t
   :bind
   (("C-s" . consult-line)
-   ("C-x b" . consult-buffer)  ;; バッファ・recentf・bookmarks・project files などを統合的に検索
+   ("C-x b" . consult-buffer)
    ("C-x C-r" . consult-recent-file)
-   ("M-y" . consult-yank-pop))) ;; kill-ring からの検索・挿入
+   ("M-y" . consult-yank-pop)))
 
-;; 補完スタイルをあいまい検索に変更
-(use-package orderless
+(leaf orderless
   :ensure t
-  :init
-  (setq completion-styles '(orderless)
-        completion-category-defaults nil))
+  :custom
+  ((completion-styles . '(orderless))
+   (completion-category-defaults . nil)))
 
-;; recentf による最近使ったファイル一覧
-(use-package recentf
-  :ensure nil ;; built-in パッケージなので `:ensure` は不要
-  :init
-  (recentf-mode 1)
-  (setq recentf-max-menu-items 100
-        recentf-max-saved-items 200
-        recentf-auto-cleanup 'never))
+(leaf recentf
+  :global-minor-mode t
+  :pre-setq
+  ((recentf-max-menu-items . 100)
+   (recentf-max-saved-items . 200)
+   (recentf-auto-cleanup . 'never)))
 
-;; pythonの設定
-(use-package pyvenv
+;; Python開発環境
+(leaf pyvenv
   :ensure t
   :config
   (setenv "WORKON_HOME" "~/.virtualenvs")
-  (pyvenv-mode 1)) 
+  (pyvenv-mode 1))
 
-;; lspによる補完
-(use-package lsp-mode
-    :ensure t
-    :commands lsp
-    :hook (python-mode . lsp)
-    :config
-    (setq lsp-enable-links nil) ;; リンクを無効化
-    (lsp-enable-which-key-integration t))
-
-;; flycheck(静的解析ツール)の設定
-(use-package flycheck
+(leaf lsp-mode
   :ensure t
-  :init
-  (global-flycheck-mode))
+  :hook (python-mode . lsp)
+  :pre-setq
+  ((lsp-enable-links . nil))
+  :config
+  (lsp-enable-which-key-integration t))
 
-;; blacken(コードフォーマッタ)の設定
-(use-package blacken
+(leaf flycheck
+  :ensure t
+  :global-minor-mode t)
+
+(leaf blacken
   :ensure t
   :hook (python-mode . blacken-mode)
-  :config
-  (setq blacken-line-length '99) ;; 行の長さを99文字に設定
-  (setq blacken-fast-unsafe t)) ;; 安全でない高速モードを有効化
+  :pre-setq
+  ((blacken-line-length . 99)
+   (blacken-fast-unsafe . t)))
 
-;; 補完機能の強化
-(use-package company
+(leaf company
   :ensure t
-  :init
-  (global-company-mode)
-  (setq company-idle-delay 0.2) ;; 補完の遅延時間を0.2秒に設定
-  (setq company-minimum-prefix-length 1) ;; 最小のプレフィックス長を1に設定
-  (setq company-selection-wrap-around t) ;; 選択肢を循環させる
-  (setq company-tooltip-align-annotations t)) ;; ツールチップのアノテーションを揃える
+  :global-minor-mode t
+  :pre-setq
+  ((company-idle-delay . 0.2)
+   (company-minimum-prefix-length . 1)
+   (company-selection-wrap-around . t)
+   (company-tooltip-align-annotations . t)))
 
-(use-package company-box
+(leaf company-box
   :ensure t
   :hook (company-mode . company-box-mode)
-  :config
-  ;;(setq company-box-icons-alist 'company-box-icons-all-the-icons) ;; アイコンを all-the-icons に設定
-  (setq company-box-show-single-candidate t)) ;; 単一候補のときもアイコンを表示
+  :pre-setq
+  ((company-box-show-single-candidate . t)))
 
-
-;; git-gutter https://github.com/emacsorphanage/git-gutter
-(use-package git-gutter
+(leaf git-gutter
   :ensure t
-  :config
-  (global-git-gutter-mode +1))
+  :global-minor-mode t)
 
-;; 以下、自動生成行
+;; 自動生成された設定（そのまま残す）
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(package-selected-packages nil)
+ '(package-selected-packages
+   '(blacken company-box consult copilot elpy flycheck git-gutter leaf
+             leuven-theme lsp-mode marginalia material-theme
+             mermaid-mode modus-themes nord-theme ob-mermaid orderless
+             org-modern org-roam treemacs-icons-dired treemacs-magit
+             treemacs-nerd-icons vertico zenburn-theme))
  '(package-vc-selected-packages
    '((copilot :url "https://github.com/copilot-emacs/copilot.el" :branch
               "main"))))
@@ -473,4 +423,3 @@
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  )
-
