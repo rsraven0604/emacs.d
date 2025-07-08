@@ -1,18 +1,14 @@
-;; 余計なファイルを生成しない
-(leaf files
-  :config
-  (setq make-backup-files nil)
-  (setq auto-save-default nil)
-  (setq auto-save-list-file-prefix nil))
-
 ;; パッケージリポジトリの設定
-(leaf package
-  :config
-  (add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
-  (add-to-list 'package-archives '("gnu" . "https://elpa.gnu.org/packages/") t)
-  (package-initialize))
+(require 'package)
+(add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
+(add-to-list 'package-archives '("gnu" . "https://elpa.gnu.org/packages/") t)
+(package-initialize)
 
 ;; leafの設定
+(unless (package-installed-p 'leaf)
+  (package-refresh-contents)
+  (package-install 'leaf))
+
 (leaf leaf
   :ensure t
   :require t)
@@ -23,6 +19,13 @@
   :require t
   :config
   (leaf-keywords-init))
+
+;; 余計なファイルを生成しない
+(leaf files
+  :config
+  (setq make-backup-files nil)
+  (setq auto-save-default nil)
+  (setq auto-save-list-file-prefix nil))
 
 ;; UI設定
 (leaf ui-config
@@ -91,6 +94,22 @@
   :config
   (set-frame-parameter nil 'alpha-background 85)
   (add-to-list 'default-frame-alist '(alpha-background . 85)))
+
+;; 参考 https://a.conao3.com/blog/2024/7c7c265/
+
+;; autorevert Emacs外でファイルが更新された時に更新する
+(leaf autorevert
+  :doc "revert buffers when files on disk change"
+  :global-minor-mode global-auto-revert-mode)
+
+(leaf paren
+  :doc "highlight matching paren"
+  :global-minor-mode show-paren-mode)
+
+(leaf savehist
+  :doc "Save minibuffer history"
+  :custom `((savehist-file . ,(locate-user-emacs-file "savehist")))
+  :global-minor-mode t)
 
 ;; magit
 (leaf magit
