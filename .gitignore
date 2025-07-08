@@ -1,0 +1,13 @@
+elpa/
+session*
+eln-cache/
+.cache/
+
+transient/history.el    
+.lsp-session-v1
+.org-id-locations
+bookmarks
+org-roam.db
+projects
+recentf
+savehist
