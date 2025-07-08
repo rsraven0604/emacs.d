@@ -399,16 +399,14 @@
 
 (leaf org-modern
   :ensure t
-  :hook (org-mode . global-org-modern-mode))
+  :hook (org-mode . org-modern-mode))
+
+(global-org-modern-mode)
 
 (leaf org-modern-indent
   :load-path "~/repos/org-modern-indent/"
-  :hook ((org-mode . org-indent-mode)
+  :hook (;;(org-mode . org-indent-mode)
          (org-mode . org-modern-indent-mode)))
-
-(leaf org-superstar
-  :load-path "~/repos/org-superstar-mode/"
-  :hook (org-mode . org-superstar-mode))
 
 ;; GitHub Copilot
 (leaf copilot
