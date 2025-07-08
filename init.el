@@ -217,33 +217,61 @@
   :mode (("\\.org\\'" . org-mode))
   :pre-setq
   ((org-directory . "~/Dropbox/agenda/")
-   (org-agenda-files . '("~/Dropbox/agenda/"))
    (system-time-locale . "C")
    (org-hide-leading-stars . t)
    (org-startup-folded . nil)
-   (org-todo-keywords . '((sequence "TASK(t)" "WAIT(w)" "|" "DONE(d)" "ABORT(a)" "SOMEDAY(s)")))
-   (org-tag-alist . '(("PROJECT" . ?p) ("MEMO" . ?m) ("PETIT" . ?t)))
+   (org-todo-keywords . '((sequence "INBOX(i)" "TODO(t)" "NEXT(n)" "WAIT(w)" "PROJECT(p)" "|" "DONE(d)" "CANCELLED(c)" "SOMEDAY(s)")))
+   (org-tag-alist . '(("@office" . ?o) ("@home" . ?h) ("@computer" . ?c) ("@phone" . ?p) ("@errands" . ?e) 
+                      ("@agenda" . ?a) ("@reading" . ?r) ("@waiting" . ?w)
+                      ("energy_high" . ?H) ("energy_low" . ?L) ("time_15min" . ?1) ("time_30min" . ?3) ("time_1hr" . ?6)))
    (org-startup-indented . t)
    (org-capture-templates . 
-    '(("t" "Task" entry (file+headline org-default-notes-file "inbox")
-       "** TASK %?\n   CREATED: %U\n")
-      ("i" "Idea" entry (file+headline org-default-notes-file "idea")
-       "** %?\n   CREATED: %U\n")
-      ("k" "Knowledge" entry (file+headline org-default-notes-file "knowledge")
-       "** %?\n   CREATED: %U\n")))
+    '(("i" "📥 Inbox (GTD)" entry (file+headline org-default-notes-file "inbox")
+       "** INBOX %?\n   CREATED: %U\n")
+      ("t" "✅ Next Action (GTD)" entry (file+headline org-default-notes-file "next_actions")
+       "** TODO %? %^G\n   CREATED: %U\n")
+      ("p" "📋 Project (GTD)" entry (file+headline org-default-notes-file "projects")
+       "** PROJECT %^{Project Name} %^G\n   CREATED: %U\n   %?")))
    (org-refile-targets . '((org-agenda-files :maxlevel . 1)))
    (org-log-done . 'time)
    (org-clock-clocked-in-display . 'frame-title))
   :init
   (setq org-default-notes-file (concat org-directory "main.org"))
+  :config
+  ;; org-agenda-filesの設定
+  (setq org-agenda-files 
+        (append '("~/Dropbox/agenda/")
+                (when (file-exists-p "~/Dropbox/roam/daily/")
+                  (directory-files-recursively "~/Dropbox/roam/daily/" "\\.org$"))))
   (defun my:org-goto-inbox ()
     (interactive)
     (find-file org-default-notes-file))
+  (defun my:org-goto-diary ()
+    "Open current month's diary file"
+    (interactive)
+    (find-file (concat "~/Dropbox/diary/" (format-time-string "%Y%m") ".org")))
+  (defun my:org-goto-diary-today ()
+    "Open today's entry in diary"
+    (interactive)
+    (my:org-goto-diary)
+    (goto-char (point-min))
+    (search-forward (format-time-string "* %Y-%m-%d") nil t))
+  (defun my:refresh-org-agenda-files ()
+    "Refresh org-agenda-files to include new org-roam daily files"
+    (interactive)
+    (setq org-agenda-files 
+          (append '("~/Dropbox/agenda/")
+                  (when (file-exists-p "~/Dropbox/roam/daily/")
+                    (directory-files-recursively "~/Dropbox/roam/daily/" "\\.org$"))))
+    (message "Refreshed org-agenda-files with %d files" (length org-agenda-files)))
   :bind
   (("C-c a" . org-agenda)
    ("C-c c" . org-capture)
    ("C-c g" . org-clock-goto)
-   ("C-c i" . my:org-goto-inbox))
+   ("C-c i" . my:org-goto-inbox)
+   ("C-c d" . my:org-goto-diary)
+   ("C-c C-d" . my:org-goto-diary-today)
+   ("C-c A" . my:refresh-org-agenda-files))
   :bind
   (:org-mode-map
    ("C-m" . org-return-indent)
@@ -254,7 +282,26 @@
   :commands org-agenda
   :pre-setq
   ((org-agenda-custom-commands . 
-    '(("x" "Unscheduled Tasks" tags-todo
+    '(("g" . "GTD Views")
+      ("gi" "Inbox" tags-todo "TODO=\"INBOX\"")
+      ("gn" "Next Actions" tags-todo "TODO=\"NEXT\"")
+      ("gw" "Waiting For" tags-todo "TODO=\"WAIT\"")
+      ("gp" "Projects" tags-todo "TODO=\"PROJECT\"")
+      ("gs" "Someday/Maybe" tags-todo "TODO=\"SOMEDAY\"")
+      ("gc" "Contexts")
+      ("gco" "@office" tags-todo "@office")
+      ("gch" "@home" tags-todo "@home")
+      ("gcc" "@computer" tags-todo "@computer")
+      ("gcp" "@phone" tags-todo "@phone")
+      ("gce" "@errands" tags-todo "@errands")
+      ("gr" "Reviews")
+      ("grd" "Daily Review" agenda ""
+       ((org-agenda-span 1)))
+      ("grw" "Weekly Review" agenda ""
+       ((org-agenda-span 7)))
+      ("gru" "Unscheduled" tags-todo
+       "-SCHEDULED>=\"<today>\"-DEADLINE>=\"<today>\"")
+      ("x" "Unscheduled Tasks" tags-todo
        "-SCHEDULED>=\"<today>\"-DEADLINE>=\"<today>\"" nil)
       ("d" "Daily Tasks" agenda ""
        ((org-agenda-span 1)))))
@@ -286,6 +333,42 @@
         (concat "${title:*} " (propertize "${tags:10}" 'face 'org-tag)))
   (setq org-roam-db-location "~/.org-roam.db")
   (setq org-roam-index-file "~/Dropbox/roam/Index.org")
+  
+  ;; org-roam-capture-templates設定（知識管理専用）
+  (setq org-roam-capture-templates
+        '(("d" "🧠 Knowledge Note" plain "%?"
+           :target (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
+                             "#+title: ${title}\n#+date: %U\n\n")
+           :unnarrowed t)
+          ("s" "💻 Code Snippet" plain "#+begin_src %^{Language}\n%?\n#+end_src"
+           :target (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
+                             "#+title: ${title}\n#+date: %U\n#+filetags: :snippet:\n\n")
+           :unnarrowed t)
+          ("r" "📚 Reference" plain "URL: %^{URL}\n\n%?"
+           :target (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
+                             "#+title: ${title}\n#+date: %U\n#+filetags: :reference:\n\n")
+           :unnarrowed t)))
+
+  ;; org-roam-dailies設定
+  (setq org-roam-dailies-directory "daily/")
+  (setq org-roam-dailies-capture-templates
+        '(("d" "default" entry
+           "* %<%H:%M> %?"
+           :target (file+head "%<%Y-%m-%d>.org"
+                             "#+title: %<%Y-%m-%d>\n#+filetags: :daily:\n\n"))
+          ("t" "task" entry
+           "* %<%H:%M> TASK %?"
+           :target (file+head "%<%Y-%m-%d>.org"
+                             "#+title: %<%Y-%m-%d>\n#+filetags: :daily:\n\n"))
+          ("m" "meeting" entry
+           "* %<%H:%M> %^{Meeting} :meeting:\n** 参加者: %^{Participants}\n** アジェンダ:\n%?"
+           :target (file+head "%<%Y-%m-%d>.org"
+                             "#+title: %<%Y-%m-%d>\n#+filetags: :daily:\n\n"))
+          ("l" "log" entry
+           "* %<%H:%M> %^{Title} :log:\n#+begin_src %^{Language}\n%?\n#+end_src"
+           :target (file+head "%<%Y-%m-%d>.org"
+                             "#+title: %<%Y-%m-%d>\n#+filetags: :daily:\n\n"))))
+  
   (org-roam-db-autosync-mode)
   (require 'org-roam-protocol)
   :bind
@@ -294,8 +377,11 @@
    ("C-c n g" . org-roam-graph)
    ("C-c n i" . org-roam-node-insert)
    ("C-c n c" . org-roam-capture)
-   ("C-c n j" . org-roam-dailies-capture-today)))
-
+   ("C-c n j" . org-roam-dailies-capture-today)
+   ("C-c n d" . org-roam-dailies-goto-today)
+   ("C-c n y" . org-roam-dailies-goto-yesterday)
+   ("C-c n t" . org-roam-dailies-goto-tomorrow)
+   ("C-c n D" . org-roam-dailies-goto-date)))
 (leaf ob-mermaid
   :ensure t
   :pre-setq
