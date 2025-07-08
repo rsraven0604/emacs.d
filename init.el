@@ -442,18 +442,70 @@
   :global-minor-mode t)
 
 (leaf consult
+  :doc "Consulting completing-read"
   :ensure t
-  :bind
-  (("C-s" . consult-line)
-   ("C-x b" . consult-buffer)
-   ("C-x C-r" . consult-recent-file)
-   ("M-y" . consult-yank-pop)))
+  :hook (completion-list-mode-hook . consult-preview-at-point-mode)
+  :defun consult-line
+  :preface
+  (defun c/consult-line (&optional at-point)
+    "Consult-line uses things-at-point if set C-u prefix."
+    (interactive "P")
+    (if at-point
+        (consult-line (thing-at-point 'symbol))
+      (consult-line)))
+  :custom ((xref-show-xrefs-function . #'consult-xref)
+           (xref-show-definitions-function . #'consult-xref)
+           (consult-line-start-from-top . t))
+  :bind (;; C-c bindings (mode-specific-map)
+         ([remap switch-to-buffer] . consult-buffer) ; C-x b
+         ([remap project-switch-to-buffer] . consult-project-buffer) ; C-x p b
+
+         ;; M-g bindings (goto-map)
+         ([remap goto-line] . consult-goto-line)    ; M-g g
+         ([remap imenu] . consult-imenu)            ; M-g i
+         ("M-g f" . consult-flymake)
+
+         ;; C-M-s bindings
+         ("C-s" . c/consult-line)       ; isearch-forward
+         ("C-M-s" . nil)                ; isearch-forward-regexp
+         ("C-M-s s" . isearch-forward)
+         ("C-M-s C-s" . isearch-forward-regexp)
+         ("C-M-s r" . consult-ripgrep)
+
+         (minibuffer-local-map
+          :package emacs
+          ("C-r" . consult-history))))
+
+(leaf affe
+  :doc "Asynchronous Fuzzy Finder for Emacs"
+  :ensure t
+  :custom ((affe-highlight-function . 'orderless-highlight-matches)
+           (affe-regexp-function . 'orderless-pattern-compiler))
+  :bind (("C-M-s r" . affe-grep)
+         ("C-M-s f" . affe-find)))
 
 (leaf orderless
   :ensure t
   :custom
   ((completion-styles . '(orderless))
    (completion-category-defaults . nil)))
+
+(leaf corfu
+  :doc "COmpletion in Region FUnction"
+  :ensure t
+  :global-minor-mode global-corfu-mode corfu-popupinfo-mode
+  :custom ((corfu-auto . t)
+           (corfu-auto-delay . 0)
+           (corfu-auto-prefix . 1)
+           (corfu-popupinfo-delay . nil)) ; manual
+  :bind ((corfu-map
+          ("C-s" . corfu-insert-separator))))
+
+(leaf cape
+  :doc "Completion At Point Extensions"
+  :ensure t
+  :config
+  (add-to-list 'completion-at-point-functions #'cape-file))
 
 (leaf recentf
   :global-minor-mode t
@@ -469,13 +521,16 @@
   (setenv "WORKON_HOME" "~/.virtualenvs")
   (pyvenv-mode 1))
 
-(leaf lsp-mode
-  :ensure t
-  :hook (python-mode . lsp)
-  :pre-setq
-  ((lsp-enable-links . nil))
-  :config
-  (lsp-enable-which-key-integration t))
+(leaf eglot
+  :doc "The Emacs Client for LSP servers"
+  :hook ((clojure-mode-hook . eglot-ensure))
+  :custom ((eldoc-echo-area-use-multiline-p . nil)
+           (eglot-connect-timeout . 600)))
+
+(leaf eglot-booster
+  :when (executable-find "emacs-lsp-booster")
+  :vc ( :url "https://github.com/jdtsmith/eglot-booster")
+  :global-minor-mode t)
 
 (leaf flycheck
   :ensure t
