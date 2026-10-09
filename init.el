@@ -57,7 +57,7 @@
 
 ;; キーバインド設定
 (leaf keybindings
-  :config
+  :preface
   (defun other-window-or-split (val)
     (interactive)
     (when (one-window-p)
