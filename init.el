@@ -407,27 +407,6 @@
   :load-path "~/repos/org-modern-indent/"
   :hook (org-mode-hook . org-modern-indent-mode))
 
-;; GitHub Copilot
-(leaf copilot
-  :vc (:url "https://github.com/copilot-emacs/copilot.el"
-            :rev :newest
-            :branch "main")
-  :hook (prog-mode . copilot-mode)
-  :pre-setq
-  ((copilot-indent-offset-warning-disable . t)
-   (copilot-max-char-warning-disabled . t))
-  :bind
-  (:copilot-completion-map
-   ("C-e" . copilot-accept-completion)
-   ("M-f" . copilot-accept-completion-by-word)
-   ("C-M-f" . copilot-accept-completion-by-paragraph)
-   ("M-n" . copilot-accept-completion-by-line)
-   ("C-M-n" . copilot-next-completion)
-   ("C-M-p" . copilot-previous-completion))
-  :bind
-  (:copilot-mode-map
-   ("M-i" . copilot-complete)))
-
 ;; 補完システム
 (leaf vertico
   :ensure t
@@ -551,14 +530,11 @@
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(package-selected-packages
-   '(blacken company-box consult copilot elpy flycheck git-gutter leaf
+   '(blacken company-box consult elpy flycheck git-gutter leaf
              leuven-theme lsp-mode marginalia material-theme
              mermaid-mode modus-themes nord-theme ob-mermaid orderless
              org-modern org-roam treemacs-icons-dired treemacs-magit
-             treemacs-nerd-icons vertico zenburn-theme))
- '(package-vc-selected-packages
-   '((copilot :url "https://github.com/copilot-emacs/copilot.el" :branch
-              "main"))))
+             treemacs-nerd-icons vertico zenburn-theme)))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
