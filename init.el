@@ -6,24 +6,8 @@
 (add-to-list 'package-archives '("gnu" . "https://elpa.gnu.org/packages/") t)
 (package-initialize)
 
-;; leafの設定
-(unless (package-installed-p 'leaf)
-  (package-refresh-contents)
-  (package-install 'leaf))
-
-(leaf leaf
-  :ensure t
-  :require t)
-
-;; leaf-keywordsの設定（:ensureなどを使うため）
-(leaf leaf-keywords
-  :ensure t
-  :require t
-  :config
-  (leaf-keywords-init))
-
 ;; 余計なファイルを生成しない
-(leaf files
+(use-package files
   :config
   (setq make-backup-files nil)
   (setq auto-save-default nil)
@@ -31,7 +15,7 @@
 
 
 ;; UI設定
-(leaf ui-config
+(use-package emacs
   :config
   (setq inhibit-startup-message t)
   (scroll-bar-mode -1)
@@ -42,13 +26,13 @@
   (setq-default show-trailing-whitespace t))
 
 ;; インデント設定
-(leaf indentation
+(use-package emacs
   :config
   (setq-default indent-tabs-mode nil)
   (setq-default tab-width 4))
 
 ;; フォント設定
-(leaf font-config
+(use-package emacs
   :config
   (set-face-attribute 'default nil :family "Monaspace Xenon Var" :height 120)
   (setq-default line-spacing 0.2)
@@ -56,7 +40,7 @@
 
 
 ;; キーバインド設定
-(leaf keybindings
+(use-package emacs
   :preface
   (defun other-window-or-split (val)
     (interactive)
@@ -68,32 +52,33 @@
    ("C-t" . (lambda () (interactive) (other-window-or-split 1)))))
 
 ;; テーマの設定
-(leaf zenburn-theme
+;; zenburn-theme.el は feature を provide しないため、require させずに :init で読み込む
+(use-package zenburn-theme
   :ensure t
-  :pre-setq
-  ((zenburn-use-variable-pitch . t)
-   (zenburn-scale-org-headlines . t)
-   (zenburn-scale-outline-headlines . t)
-   (zenburn-override-colors-alist . 
-    '(("zenburn-bg-2" . "#040403")
-      ("zenburn-bg-1" . "#080806")          
-      ("zenburn-bg-08" . "#121210")          
-      ("zenburn-bg-05" . "#121210")
-      ("zenburn-bg"    . "#151511")
-      ("zenburn-bg+0"  . "#161613")
-      ("zenburn-bg+04" . "#171714")
-      ("zenburn-bg+05" . "#181816")
-      ("zenburn-bg+1"  . "#1F1F1C")
-      ("zenburn-bg+2"  . "#2F2F24")
-      ("zenburn-bg+3"  . "#3F3F30")
-      ("zenburn-fg"    . "#DCDCCC")
-      ("zenburn-fg+1"  . "#E0DCC0")
-      ("zenburn-fg+2"  . "#E4DCC8"))))
-  :config
+  :defer t
+  :init
+  (setq zenburn-use-variable-pitch t)
+  (setq zenburn-scale-org-headlines t)
+  (setq zenburn-scale-outline-headlines t)
+  (setq zenburn-override-colors-alist
+        '(("zenburn-bg-2" . "#040403")
+          ("zenburn-bg-1" . "#080806")
+          ("zenburn-bg-08" . "#121210")
+          ("zenburn-bg-05" . "#121210")
+          ("zenburn-bg"    . "#151511")
+          ("zenburn-bg+0"  . "#161613")
+          ("zenburn-bg+04" . "#171714")
+          ("zenburn-bg+05" . "#181816")
+          ("zenburn-bg+1"  . "#1F1F1C")
+          ("zenburn-bg+2"  . "#2F2F24")
+          ("zenburn-bg+3"  . "#3F3F30")
+          ("zenburn-fg"    . "#DCDCCC")
+          ("zenburn-fg+1"  . "#E0DCC0")
+          ("zenburn-fg+2"  . "#E4DCC8")))
   (load-theme 'zenburn t))
 
 ;; 背景透過
-(leaf transparency
+(use-package emacs
   :config
   (set-frame-parameter nil 'alpha-background 85)
   (add-to-list 'default-frame-alist '(alpha-background . 85)))
@@ -101,27 +86,30 @@
 ;; 参考 https://a.conao3.com/blog/2024/7c7c265/
 
 ;; autorevert Emacs外でファイルが更新された時に更新する
-(leaf autorevert
-  :doc "revert buffers when files on disk change"
-  :global-minor-mode global-auto-revert-mode)
+(use-package autorevert
+  :config
+  (global-auto-revert-mode 1))
 
-(leaf paren
-  :doc "highlight matching paren"
-  :global-minor-mode show-paren-mode)
+;; 対応する括弧を強調する
+(use-package paren
+  :config
+  (show-paren-mode 1))
 
-(leaf savehist
-  :doc "Save minibuffer history"
-  :custom `((savehist-file . ,(locate-user-emacs-file "savehist")))
-  :global-minor-mode t)
+;; ミニバッファの履歴を保存する
+(use-package savehist
+  :custom
+  (savehist-file (locate-user-emacs-file "savehist"))
+  :config
+  (savehist-mode 1))
 
 ;; magit
-(leaf magit
+(use-package magit
   :ensure t
   :bind (("C-x g" . magit-status)
          ("C-x M-g" . magit-dispatch-popup)))
 
 ;; Treemacs
-(leaf treemacs
+(use-package treemacs
   :ensure t
   :config
   (setq treemacs-collapse-dirs (if treemacs-python-executable 3 0))
@@ -199,7 +187,7 @@
    ("C-x t M-t" . treemacs-find-tag)))
 
 ;; Treemacs関連プラグイン
-(leaf treemacs-nerd-icons
+(use-package treemacs-nerd-icons
   :ensure t
   :after treemacs
   :config
@@ -207,45 +195,18 @@
   (setq treemacs-nerd-icons-scale-factor 1.0)
   (setq treemacs-nerd-icons-hl-face 'treemacs-root-face))
 
-(leaf treemacs-icons-dired
+(use-package treemacs-icons-dired
   :ensure t
-  :hook (dired-mode-hook . treemacs-icons-dired-enable-once))
+  :hook (dired-mode . treemacs-icons-dired-enable-once))
 
-(leaf treemacs-magit
+(use-package treemacs-magit
   :ensure t
   :after (treemacs magit))
 
 ;; org-mode設定
-(leaf org
+(use-package org
   :mode (("\\.org\\'" . org-mode))
-  :pre-setq
-  ((org-directory . "~/Dropbox/agenda/")
-   (system-time-locale . "C")
-   (org-hide-leading-stars . t)
-   (org-startup-folded . nil)
-   (org-todo-keywords . '((sequence "INBOX(i)" "TODO(t)" "NEXT(n)" "WAIT(w)" "PROJECT(p)" "|" "DONE(d)" "CANCELLED(c)" "SOMEDAY(s)")))
-   (org-tag-alist . '(("@office" . ?o) ("@home" . ?h) ("@computer" . ?c) ("@phone" . ?p) ("@errands" . ?e) 
-                      ("@agenda" . ?a) ("@reading" . ?r) ("@waiting" . ?w)
-                      ("energy_high" . ?H) ("energy_low" . ?L) ("time_15min" . ?1) ("time_30min" . ?3) ("time_1hr" . ?6)))
-   (org-startup-indented . t)
-   (org-capture-templates . 
-    '(("i" "📥 Inbox (GTD)" entry (file+headline org-default-notes-file "inbox")
-       "** INBOX %?\n   CREATED: %U\n")
-      ("t" "✅ Next Action (GTD)" entry (file+headline org-default-notes-file "next_actions")
-       "** TODO %? %^G\n   CREATED: %U\n")
-      ("p" "📋 Project (GTD)" entry (file+headline org-default-notes-file "projects")
-       "** PROJECT %^{Project Name} %^G\n   CREATED: %U\n   %?")))
-   (org-refile-targets . '((org-agenda-files :maxlevel . 1)))
-   (org-log-done . 'time)
-   (org-clock-clocked-in-display . 'frame-title))
-  :init
-  (setq org-default-notes-file (concat org-directory "main.org"))
-  :config
-  ;; org-agenda-filesの設定
-  (setq org-agenda-files 
-        (append '("~/Dropbox/agenda/")
-                (when (file-exists-p "~/Dropbox/roam/daily/")
-                  (directory-files-recursively "~/Dropbox/roam/daily/" "\\.org$"))))
+  :preface
   (defun my:org-goto-inbox ()
     (interactive)
     (find-file org-default-notes-file))
@@ -262,11 +223,40 @@
   (defun my:refresh-org-agenda-files ()
     "Refresh org-agenda-files to include new org-roam daily files"
     (interactive)
-    (setq org-agenda-files 
+    (setq org-agenda-files
           (append '("~/Dropbox/agenda/")
                   (when (file-exists-p "~/Dropbox/roam/daily/")
                     (directory-files-recursively "~/Dropbox/roam/daily/" "\\.org$"))))
     (message "Refreshed org-agenda-files with %d files" (length org-agenda-files)))
+  :init
+  (setq org-directory "~/Dropbox/agenda/")
+  (setq system-time-locale "C")
+  (setq org-hide-leading-stars t)
+  (setq org-startup-folded nil)
+  (setq org-todo-keywords
+        '((sequence "INBOX(i)" "TODO(t)" "NEXT(n)" "WAIT(w)" "PROJECT(p)" "|" "DONE(d)" "CANCELLED(c)" "SOMEDAY(s)")))
+  (setq org-tag-alist
+        '(("@office" . ?o) ("@home" . ?h) ("@computer" . ?c) ("@phone" . ?p) ("@errands" . ?e)
+          ("@agenda" . ?a) ("@reading" . ?r) ("@waiting" . ?w)
+          ("energy_high" . ?H) ("energy_low" . ?L) ("time_15min" . ?1) ("time_30min" . ?3) ("time_1hr" . ?6)))
+  (setq org-startup-indented t)
+  (setq org-capture-templates
+        '(("i" "📥 Inbox (GTD)" entry (file+headline org-default-notes-file "inbox")
+           "** INBOX %?\n   CREATED: %U\n")
+          ("t" "✅ Next Action (GTD)" entry (file+headline org-default-notes-file "next_actions")
+           "** TODO %? %^G\n   CREATED: %U\n")
+          ("p" "📋 Project (GTD)" entry (file+headline org-default-notes-file "projects")
+           "** PROJECT %^{Project Name} %^G\n   CREATED: %U\n   %?")))
+  (setq org-refile-targets '((org-agenda-files :maxlevel . 1)))
+  (setq org-log-done 'time)
+  (setq org-clock-clocked-in-display 'frame-title)
+  (setq org-default-notes-file (concat org-directory "main.org"))
+  :config
+  ;; org-agenda-filesの設定
+  (setq org-agenda-files
+        (append '("~/Dropbox/agenda/")
+                (when (file-exists-p "~/Dropbox/roam/daily/")
+                  (directory-files-recursively "~/Dropbox/roam/daily/" "\\.org$"))))
   :bind
   (("C-c a" . org-agenda)
    ("C-c c" . org-capture)
@@ -274,68 +264,68 @@
    ("C-c i" . my:org-goto-inbox)
    ("C-c d" . my:org-goto-diary)
    ("C-c C-d" . my:org-goto-diary-today)
-   ("C-c A" . my:refresh-org-agenda-files))
-  :bind
-  (:org-mode-map
+   ("C-c A" . my:refresh-org-agenda-files)
+   :map org-mode-map
    ("M-n" . org-forward-same-level)
    ("M-p" . org-backward-same-level)))
 
-(leaf org-agenda
+(use-package org-agenda
   :commands org-agenda
-  :pre-setq
-  ((org-agenda-custom-commands . 
-    '(("g" . "GTD Views")
-      ("gi" "Inbox" tags-todo "TODO=\"INBOX\"")
-      ("gn" "Next Actions" tags-todo "TODO=\"NEXT\"")
-      ("gw" "Waiting For" tags-todo "TODO=\"WAIT\"")
-      ("gp" "Projects" tags-todo "TODO=\"PROJECT\"")
-      ("gs" "Someday/Maybe" tags-todo "TODO=\"SOMEDAY\"")
-      ("gc" "Contexts")
-      ("gco" "@office" tags-todo "@office")
-      ("gch" "@home" tags-todo "@home")
-      ("gcc" "@computer" tags-todo "@computer")
-      ("gcp" "@phone" tags-todo "@phone")
-      ("gce" "@errands" tags-todo "@errands")
-      ("gr" "Reviews")
-      ("grd" "Daily Review" agenda ""
-       ((org-agenda-span 1)))
-      ("grw" "Weekly Review" agenda ""
-       ((org-agenda-span 7)))
-      ("gru" "Unscheduled" tags-todo
-       "-SCHEDULED>=\"<today>\"-DEADLINE>=\"<today>\"")
-      ("x" "Unscheduled Tasks" tags-todo
-       "-SCHEDULED>=\"<today>\"-DEADLINE>=\"<today>\"" nil)
-      ("d" "Daily Tasks" agenda ""
-       ((org-agenda-span 1)))))
-   (org-agenda-skip-scheduled-if-done . t)
-   (org-return-follows-link . t)
-   (org-agenda-columns-add-appointments-to-effort-sum . t)
-   (org-agenda-time-grid . 
-    '((daily today require-timed)
-      (0900 1200 1300 2000) "......" "----------------"))
-   (org-columns-default-format . 
-    "%68ITEM(Task) %6Effort(Effort){:} %6CLOCKSUM(Clock){:}"))
-  :config
+  :preface
   (defun my:org-agenda-close-after-switch (&rest _)
     "Close a org-agenda window when RET is hit on the window."
     (delete-other-windows)
     (recenter-top-bottom))
+  :init
+  (setq org-agenda-custom-commands
+        '(("g" . "GTD Views")
+          ("gi" "Inbox" tags-todo "TODO=\"INBOX\"")
+          ("gn" "Next Actions" tags-todo "TODO=\"NEXT\"")
+          ("gw" "Waiting For" tags-todo "TODO=\"WAIT\"")
+          ("gp" "Projects" tags-todo "TODO=\"PROJECT\"")
+          ("gs" "Someday/Maybe" tags-todo "TODO=\"SOMEDAY\"")
+          ("gc" "Contexts")
+          ("gco" "@office" tags-todo "@office")
+          ("gch" "@home" tags-todo "@home")
+          ("gcc" "@computer" tags-todo "@computer")
+          ("gcp" "@phone" tags-todo "@phone")
+          ("gce" "@errands" tags-todo "@errands")
+          ("gr" "Reviews")
+          ("grd" "Daily Review" agenda ""
+           ((org-agenda-span 1)))
+          ("grw" "Weekly Review" agenda ""
+           ((org-agenda-span 7)))
+          ("gru" "Unscheduled" tags-todo
+           "-SCHEDULED>=\"<today>\"-DEADLINE>=\"<today>\"")
+          ("x" "Unscheduled Tasks" tags-todo
+           "-SCHEDULED>=\"<today>\"-DEADLINE>=\"<today>\"" nil)
+          ("d" "Daily Tasks" agenda ""
+           ((org-agenda-span 1)))))
+  (setq org-agenda-skip-scheduled-if-done t)
+  (setq org-return-follows-link t)
+  (setq org-agenda-columns-add-appointments-to-effort-sum t)
+  (setq org-agenda-time-grid
+        '((daily today require-timed)
+          (0900 1200 1300 2000) "......" "----------------"))
+  (setq org-columns-default-format
+        "%68ITEM(Task) %6Effort(Effort){:} %6CLOCKSUM(Clock){:}")
+  :config
   (advice-add 'org-agenda-switch-to :after #'my:org-agenda-close-after-switch)
   :bind
-  (:org-agenda-mode-map
+  (:map org-agenda-mode-map
    ("s" . org-agenda-schedule)
    ("S" . org-save-all-org-buffers)))
 
-(leaf org-roam
+(use-package org-roam
   :ensure t
   :config
   (setq org-roam-database-connector 'sqlite-builtin)
   (setq org-roam-directory (file-truename "~/Dropbox/roam"))
-  (setq org-roam-node-display-template 
+  (setq org-roam-node-display-template
         (concat "${title:*} " (propertize "${tags:10}" 'face 'org-tag)))
   (setq org-roam-db-location "~/.org-roam.db")
   (setq org-roam-index-file "~/Dropbox/roam/Index.org")
-  
+
   ;; org-roam-capture-templates設定（知識管理専用）
   (setq org-roam-capture-templates
         '(("d" "🧠 Knowledge Note" plain "%?"
@@ -370,7 +360,7 @@
            "* %<%H:%M> %^{Title} :log:\n#+begin_src %^{Language}\n%?\n#+end_src"
            :target (file+head "%<%Y-%m-%d>.org"
                              "#+title: %<%Y-%m-%d>\n#+filetags: :daily:\n\n"))))
-  
+
   (org-roam-db-autosync-mode)
   (require 'org-roam-protocol)
   :bind
@@ -384,44 +374,49 @@
    ("C-c n y" . org-roam-dailies-goto-yesterday)
    ("C-c n t" . org-roam-dailies-goto-tomorrow)
    ("C-c n D" . org-roam-dailies-goto-date)))
-(leaf ob-mermaid
+
+(use-package ob-mermaid
   :ensure t
-  :pre-setq
-  ((ob-mermaid-cli-path . "/usr/bin/mmdc"))
+  :init
+  (setq ob-mermaid-cli-path "/usr/bin/mmdc")
   :config
   (org-babel-do-load-languages
    'org-babel-load-languages
    '((mermaid . t)
      (scheme . t))))
 
-(leaf mermaid-mode
+(use-package mermaid-mode
   :ensure t
-  :pre-setq
-  ((mermaid-output-format . "/usr/bin/mmdc")))
+  :defer t
+  :init
+  (setq mermaid-output-format "/usr/bin/mmdc"))
 
-(leaf org-modern
+(use-package org-modern
   :ensure t
-  :global-minor-mode global-org-modern-mode)
+  :config
+  (global-org-modern-mode 1))
 
-(leaf org-modern-indent
+(use-package org-modern-indent
   :load-path "~/repos/org-modern-indent/"
-  :hook (org-mode-hook . org-modern-indent-mode))
+  :hook (org-mode . org-modern-indent-mode))
 
 ;; 補完システム
-(leaf vertico
+(use-package vertico
   :ensure t
-  :global-minor-mode t)
+  :config
+  (vertico-mode 1))
 
-(leaf marginalia
+(use-package marginalia
   :ensure t
   :after vertico
-  :global-minor-mode t)
+  :config
+  (marginalia-mode 1))
 
-(leaf consult
-  :doc "Consulting completing-read"
+;; Consulting completing-read
+(use-package consult
   :ensure t
-  :hook (completion-list-mode-hook . consult-preview-at-point-mode)
-  :defun consult-line
+  :hook (completion-list-mode . consult-preview-at-point-mode)
+  :functions consult-line
   :preface
   (defun c/consult-line (&optional at-point)
     "Consult-line uses things-at-point if set C-u prefix."
@@ -429,9 +424,13 @@
     (if at-point
         (consult-line (thing-at-point 'symbol))
       (consult-line)))
-  :custom ((xref-show-xrefs-function . #'consult-xref)
-           (xref-show-definitions-function . #'consult-xref)
-           (consult-line-start-from-top . t))
+  :custom
+  (xref-show-xrefs-function #'consult-xref)
+  (xref-show-definitions-function #'consult-xref)
+  (consult-line-start-from-top t)
+  :init
+  ;; C-M-s（isearch-forward-regexp）を外し、下の C-M-s から始まるキーのプレフィックスにする
+  (keymap-global-unset "C-M-s")
   :bind (;; C-c bindings (mode-specific-map)
          ([remap switch-to-buffer] . consult-buffer) ; C-x b
          ([remap project-switch-to-buffer] . consult-project-buffer) ; C-x p b
@@ -443,77 +442,85 @@
 
          ;; C-M-s bindings
          ("C-s" . c/consult-line)       ; isearch-forward
-         ("C-M-s" . nil)                ; isearch-forward-regexp
          ("C-M-s s" . isearch-forward)
          ("C-M-s C-s" . isearch-forward-regexp)
          ("C-M-s r" . consult-ripgrep)
 
-         (minibuffer-local-map
-          :package emacs
-          ("C-r" . consult-history))))
+         :map minibuffer-local-map
+         ("C-r" . consult-history)))
 
-(leaf affe
-  :doc "Asynchronous Fuzzy Finder for Emacs"
-  :ensure t
-  :custom ((affe-highlight-function . 'orderless-highlight-matches)
-           (affe-regexp-function . 'orderless-pattern-compiler))
-  :bind (("C-M-s f" . affe-find)))
-
-(leaf orderless
+;; Asynchronous Fuzzy Finder for Emacs
+(use-package affe
   :ensure t
   :custom
-  ((completion-styles . '(orderless))
-   (completion-category-defaults . nil)))
+  (affe-highlight-function #'orderless-highlight-matches)
+  (affe-regexp-function #'orderless-pattern-compiler)
+  :bind (("C-M-s f" . affe-find)))
 
-(leaf corfu
-  :doc "COmpletion in Region FUnction"
+(use-package orderless
   :ensure t
-  :global-minor-mode global-corfu-mode corfu-popupinfo-mode
-  :custom ((corfu-auto . t)
-           (corfu-auto-delay . 0)
-           (corfu-auto-prefix . 1)
-           (corfu-popupinfo-delay . nil)) ; manual
-  :bind ((corfu-map
-          ("C-s" . corfu-insert-separator))))
+  :custom
+  (completion-styles '(orderless))
+  (completion-category-defaults nil))
 
-(leaf cape
-  :doc "Completion At Point Extensions"
+;; COmpletion in Region FUnction
+;; :bind があると :config は後回しになるため、モードの有効化は :init で行う
+(use-package corfu
+  :ensure t
+  :custom
+  (corfu-auto t)
+  (corfu-auto-delay 0)
+  (corfu-auto-prefix 1)
+  (corfu-popupinfo-delay nil) ; manual
+  :init
+  (global-corfu-mode 1)
+  (corfu-popupinfo-mode 1)
+  :bind (:map corfu-map
+         ("C-s" . corfu-insert-separator)))
+
+;; Completion At Point Extensions
+(use-package cape
   :ensure t
   :config
   (add-to-list 'completion-at-point-functions #'cape-file))
 
-(leaf recentf
-  :global-minor-mode t
-  :pre-setq
-  ((recentf-max-menu-items . 100)
-   (recentf-max-saved-items . 200)
-   (recentf-auto-cleanup . 'never)))
+(use-package recentf
+  :init
+  (setq recentf-max-menu-items 100)
+  (setq recentf-max-saved-items 200)
+  (setq recentf-auto-cleanup 'never)
+  :config
+  (recentf-mode 1))
 
 ;; Python開発環境
-(leaf pyvenv
+(use-package pyvenv
   :ensure t
   :config
   (setenv "WORKON_HOME" "~/.virtualenvs")
   (pyvenv-mode 1))
 
-(leaf eglot
-  :doc "The Emacs Client for LSP servers"
-  :hook ((clojure-mode-hook . eglot-ensure))
-  :custom ((eldoc-echo-area-use-multiline-p . nil)
-           (eglot-connect-timeout . 600)))
+;; The Emacs Client for LSP servers
+(use-package eglot
+  :hook (clojure-mode . eglot-ensure)
+  :custom
+  (eldoc-echo-area-use-multiline-p nil)
+  (eglot-connect-timeout 600))
 
-(leaf eglot-booster
-  :when (executable-find "emacs-lsp-booster")
-  :vc ( :url "https://github.com/jdtsmith/eglot-booster")
-  :global-minor-mode t)
+(use-package eglot-booster
+  :if (executable-find "emacs-lsp-booster")
+  :vc (:url "https://github.com/jdtsmith/eglot-booster")
+  :config
+  (eglot-booster-mode 1))
 
-(leaf flycheck
+(use-package flycheck
   :ensure t
-  :global-minor-mode global-flycheck-mode)
+  :config
+  (global-flycheck-mode 1))
 
-(leaf git-gutter
+(use-package git-gutter
   :ensure t
-  :global-minor-mode global-git-gutter-mode)
+  :config
+  (global-git-gutter-mode 1))
 
 ;; 自動生成された設定（そのまま残す）
 (custom-set-variables
@@ -522,7 +529,7 @@
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(package-selected-packages
-   '(company-box consult elpy flycheck git-gutter leaf
+   '(company-box consult elpy flycheck git-gutter
              leuven-theme lsp-mode marginalia material-theme
              mermaid-mode modus-themes nord-theme ob-mermaid orderless
              org-modern org-roam treemacs-icons-dired treemacs-magit
