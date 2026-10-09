@@ -208,7 +208,7 @@
 
 (leaf treemacs-icons-dired
   :ensure t
-  :hook (dired-mode . treemacs-icons-dired-enable-once))
+  :hook (dired-mode-hook . treemacs-icons-dired-enable-once))
 
 (leaf treemacs-magit
   :ensure t
@@ -401,14 +401,11 @@
 
 (leaf org-modern
   :ensure t
-  :hook (org-mode . org-modern-mode))
-
-(global-org-modern-mode)
+  :global-minor-mode global-org-modern-mode)
 
 (leaf org-modern-indent
   :load-path "~/repos/org-modern-indent/"
-  :hook (;;(org-mode . org-indent-mode)
-         (org-mode . org-modern-indent-mode)))
+  :hook (org-mode-hook . org-modern-indent-mode))
 
 ;; GitHub Copilot
 (leaf copilot
@@ -534,7 +531,7 @@
 
 (leaf flycheck
   :ensure t
-  :global-minor-mode t)
+  :global-minor-mode global-flycheck-mode)
 
 (leaf blacken
   :ensure t
@@ -543,24 +540,9 @@
   ((blacken-line-length . 99)
    (blacken-fast-unsafe . t)))
 
-(leaf company
-  :ensure t
-  :global-minor-mode t
-  :pre-setq
-  ((company-idle-delay . 0.2)
-   (company-minimum-prefix-length . 1)
-   (company-selection-wrap-around . t)
-   (company-tooltip-align-annotations . t)))
-
-(leaf company-box
-  :ensure t
-  :hook (company-mode . company-box-mode)
-  :pre-setq
-  ((company-box-show-single-candidate . t)))
-
 (leaf git-gutter
   :ensure t
-  :global-minor-mode t)
+  :global-minor-mode global-git-gutter-mode)
 
 ;; 自動生成された設定（そのまま残す）
 (custom-set-variables
