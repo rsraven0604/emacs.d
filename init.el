@@ -512,13 +512,6 @@
   :ensure t
   :global-minor-mode global-flycheck-mode)
 
-(leaf blacken
-  :ensure t
-  :hook (python-mode . blacken-mode)
-  :pre-setq
-  ((blacken-line-length . 99)
-   (blacken-fast-unsafe . t)))
-
 (leaf git-gutter
   :ensure t
   :global-minor-mode global-git-gutter-mode)
@@ -530,7 +523,7 @@
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(package-selected-packages
-   '(blacken company-box consult elpy flycheck git-gutter leaf
+   '(company-box consult elpy flycheck git-gutter leaf
              leuven-theme lsp-mode marginalia material-theme
              mermaid-mode modus-themes nord-theme ob-mermaid orderless
              org-modern org-roam treemacs-icons-dired treemacs-magit
