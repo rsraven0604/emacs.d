@@ -275,7 +275,6 @@
    ("C-c A" . my:refresh-org-agenda-files))
   :bind
   (:org-mode-map
-   ("C-m" . org-return-indent)
    ("M-n" . org-forward-same-level)
    ("M-p" . org-backward-same-level)))
 
@@ -315,11 +314,11 @@
    (org-columns-default-format . 
     "%68ITEM(Task) %6Effort(Effort){:} %6CLOCKSUM(Clock){:}"))
   :config
-  (defadvice org-agenda-switch-to (after org-agenda-close)
+  (defun my:org-agenda-close-after-switch (&rest _)
     "Close a org-agenda window when RET is hit on the window."
-    (progn (delete-other-windows)
-           (recenter-top-bottom)))
-  (ad-activate 'org-agenda-switch-to)
+    (delete-other-windows)
+    (recenter-top-bottom))
+  (advice-add 'org-agenda-switch-to :after #'my:org-agenda-close-after-switch)
   :bind
   (:org-agenda-mode-map
    ("s" . org-agenda-schedule)
