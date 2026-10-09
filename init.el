@@ -37,14 +37,13 @@
   (menu-bar-mode -1)
   (global-display-line-numbers-mode t)
   (global-font-lock-mode t)
-  (setq show-trailing-whitespace t))
+  (setq-default show-trailing-whitespace t))
 
 ;; インデント設定
 (leaf indentation
   :config
   (setq-default indent-tabs-mode nil)
-  (setq-default tab-width 4)
-  (setq indent-line-function 'insert-tab))
+  (setq-default tab-width 4))
 
 ;; フォント設定
 (leaf font-config
@@ -457,8 +456,7 @@
   :ensure t
   :custom ((affe-highlight-function . 'orderless-highlight-matches)
            (affe-regexp-function . 'orderless-pattern-compiler))
-  :bind (("C-M-s r" . affe-grep)
-         ("C-M-s f" . affe-find)))
+  :bind (("C-M-s f" . affe-find)))
 
 (leaf orderless
   :ensure t
