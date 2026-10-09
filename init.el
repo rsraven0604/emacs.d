@@ -1,3 +1,5 @@
+;;; init.el --- Emacs init file -*- lexical-binding: t -*-
+
 ;; パッケージリポジトリの設定
 (require 'package)
 (add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
