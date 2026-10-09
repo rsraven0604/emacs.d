@@ -27,6 +27,7 @@
   (setq auto-save-default nil)
   (setq auto-save-list-file-prefix nil))
 
+
 ;; UI設定
 (leaf ui-config
   :config
@@ -51,6 +52,7 @@
   (set-face-attribute 'default nil :family "Monaspace Xenon Var" :height 120)
   (setq-default line-spacing 0.2)
   (set-frame-size (selected-frame) 120 48))
+
 
 ;; キーバインド設定
 (leaf keybindings
