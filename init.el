@@ -52,30 +52,11 @@
    ("C-t" . (lambda () (interactive) (other-window-or-split 1)))))
 
 ;; テーマの設定
-;; zenburn-theme.el は feature を provide しないため、require させずに :init で読み込む
-(use-package zenburn-theme
+;; doom-sourcerer は doom-themes に含まれる（https://emacsthemes.com/themes/doom-sourcerer）
+(use-package doom-themes
   :ensure t
-  :defer t
-  :init
-  (setq zenburn-use-variable-pitch t)
-  (setq zenburn-scale-org-headlines t)
-  (setq zenburn-scale-outline-headlines t)
-  (setq zenburn-override-colors-alist
-        '(("zenburn-bg-2" . "#040403")
-          ("zenburn-bg-1" . "#080806")
-          ("zenburn-bg-08" . "#121210")
-          ("zenburn-bg-05" . "#121210")
-          ("zenburn-bg"    . "#151511")
-          ("zenburn-bg+0"  . "#161613")
-          ("zenburn-bg+04" . "#171714")
-          ("zenburn-bg+05" . "#181816")
-          ("zenburn-bg+1"  . "#1F1F1C")
-          ("zenburn-bg+2"  . "#2F2F24")
-          ("zenburn-bg+3"  . "#3F3F30")
-          ("zenburn-fg"    . "#DCDCCC")
-          ("zenburn-fg+1"  . "#E0DCC0")
-          ("zenburn-fg+2"  . "#E4DCC8")))
-  (load-theme 'zenburn t))
+  :config
+  (load-theme 'doom-sourcerer t))
 
 ;; 背景透過
 (use-package emacs
