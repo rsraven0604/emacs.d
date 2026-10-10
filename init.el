@@ -102,6 +102,12 @@
   :config
   (savehist-mode 1))
 
+;; emacsclient から開けるようにサーバーを起動する（Claude Code の cockpit・確認シートから使う）
+(use-package server
+  :config
+  (unless (server-running-p)
+    (server-start)))
+
 ;; magit
 (use-package magit
   :ensure t
@@ -176,7 +182,6 @@
     (`(t . _)
      (treemacs-git-mode 'simple)))
   (treemacs-hide-gitignored-files-mode nil)
-  (treemacs-start-on-boot)
   :bind
   (("M-0"       . treemacs-select-window)
    ("C-x t 1"   . treemacs-delete-other-windows)
@@ -375,22 +380,6 @@
    ("C-c n t" . org-roam-dailies-goto-tomorrow)
    ("C-c n D" . org-roam-dailies-goto-date)))
 
-(use-package ob-mermaid
-  :ensure t
-  :init
-  (setq ob-mermaid-cli-path "/usr/bin/mmdc")
-  :config
-  (org-babel-do-load-languages
-   'org-babel-load-languages
-   '((mermaid . t)
-     (scheme . t))))
-
-(use-package mermaid-mode
-  :ensure t
-  :defer t
-  :init
-  (setq mermaid-output-format "/usr/bin/mmdc"))
-
 (use-package org-modern
   :ensure t
   :config
@@ -452,9 +441,6 @@
 ;; Asynchronous Fuzzy Finder for Emacs
 (use-package affe
   :ensure t
-  :custom
-  (affe-highlight-function #'orderless-highlight-matches)
-  (affe-regexp-function #'orderless-pattern-compiler)
   :bind (("C-M-s f" . affe-find)))
 
 (use-package orderless
@@ -492,6 +478,12 @@
   :config
   (recentf-mode 1))
 
+;; Markdown の編集
+;; .md への割り当ては markdown-mode の autoload が行うため、読み込みは遅らせる
+(use-package markdown-mode
+  :ensure t
+  :defer t)
+
 ;; Python開発環境
 (use-package pyvenv
   :ensure t
@@ -505,12 +497,6 @@
   :custom
   (eldoc-echo-area-use-multiline-p nil)
   (eglot-connect-timeout 600))
-
-(use-package eglot-booster
-  :if (executable-find "emacs-lsp-booster")
-  :vc (:url "https://github.com/jdtsmith/eglot-booster")
-  :config
-  (eglot-booster-mode 1))
 
 (use-package flycheck
   :ensure t
@@ -529,11 +515,10 @@
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(package-selected-packages
-   '(company-box consult elpy flycheck git-gutter
-             leuven-theme lsp-mode marginalia material-theme
-             mermaid-mode modus-themes nord-theme ob-mermaid orderless
-             org-modern org-roam treemacs-icons-dired treemacs-magit
-             treemacs-nerd-icons vertico zenburn-theme)))
+   '(affe cape consult corfu flycheck git-gutter magit marginalia
+          markdown-mode orderless org-modern org-roam pyvenv treemacs
+          treemacs-icons-dired treemacs-magit treemacs-nerd-icons
+          vertico zenburn-theme)))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
