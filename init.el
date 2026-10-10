@@ -36,6 +36,11 @@
   :config
   (set-face-attribute 'default nil :family "Monaspace Xenon Var" :height 120)
   (setq-default line-spacing 0.2)
+  ;; 日本語は Cica を 1.25 倍で使い、英字（10px）のちょうど2倍の幅（20px）にする（org の表の縦線を揃えるため）
+  ;; 英字だけの行は 20px、日本語を含む行は 24px の高さになる（2026-10-10 実測）
+  (setq face-font-rescale-alist '(("Cica" . 1.25)))
+  (dolist (script '(han kana cjk-misc japanese-jisx0208))
+    (set-fontset-font t script (font-spec :family "Cica")))
   (set-frame-size (selected-frame) 120 48))
 
 
@@ -214,6 +219,21 @@
                   (when (file-exists-p "~/Dropbox/roam/daily/")
                     (directory-files-recursively "~/Dropbox/roam/daily/" "\\.org$"))))
     (message "Refreshed org-agenda-files with %d files" (length org-agenda-files)))
+  (defvar-local my:org-wrap-off-in-table nil
+    "カーソルが表の中にあるため折り返しを止めているとき t。")
+  (defun my:org-toggle-wrap-at-table ()
+    "カーソルが表の中にある間だけ折り返しを止める（折り返すと表の形が崩れるため）。"
+    (let ((in-table (and (org-at-table-p) t)))
+      (unless (eq in-table my:org-wrap-off-in-table)
+        (setq my:org-wrap-off-in-table in-table)
+        (if in-table
+            (progn (visual-line-mode -1) (setq truncate-lines t))
+          (visual-line-mode 1)))))
+  (defun my:org-setup-look ()
+    "org の見た目：行番号を消し、長い行を折り返す（表の中にいる間は折り返さない）。"
+    (display-line-numbers-mode -1)
+    (visual-line-mode 1)
+    (add-hook 'post-command-hook #'my:org-toggle-wrap-at-table nil t))
   :init
   (setq org-directory "~/Dropbox/agenda/")
   (setq system-time-locale "C")
@@ -226,6 +246,14 @@
           ("@agenda" . ?a) ("@reading" . ?r) ("@waiting" . ?w)
           ("energy_high" . ?H) ("energy_low" . ?L) ("time_15min" . ?1) ("time_30min" . ?3) ("time_1hr" . ?6)))
   (setq org-startup-indented t)
+  ;; 見た目：本文の字下げを深くし、強調の記号と #+TITLE: の文字を隠す
+  (setq org-indent-indentation-per-level 3)
+  (setq org-hide-emphasis-markers t)
+  (setq org-hidden-keywords '(title))
+  ;; 見出しの背景を行の端まで伸ばす（見出し1の帯に使う）
+  (setq org-fontify-whole-heading-line t)
+  ;; 折り返しを日本語の文字の切れ目でも行う（既定では空白でしか折り返さない）
+  (setq word-wrap-by-category t)
   (setq org-capture-templates
         '(("i" "📥 Inbox (GTD)" entry (file+headline org-default-notes-file "inbox")
            "** INBOX %?\n   CREATED: %U\n")
@@ -237,12 +265,32 @@
   (setq org-log-done 'time)
   (setq org-clock-clocked-in-display 'frame-title)
   (setq org-default-notes-file (concat org-directory "main.org"))
+  :hook
+  (org-mode . my:org-setup-look)
   :config
   ;; org-agenda-filesの設定
   (setq org-agenda-files
         (append '("~/Dropbox/agenda/")
                 (when (file-exists-p "~/Dropbox/roam/daily/")
                   (directory-files-recursively "~/Dropbox/roam/daily/" "\\.org$"))))
+  ;; 見出しの見た目：大きさで段差を付け、:box の上下の余白で前の塊との間をあける
+  ;; 見出し1は行の端まで帯を引く（:box の色を帯と同じにして、余白も帯の一部に見せる）
+  ;; :line-width の横幅に 0 は使えない（Emacs 31.1 で Invalid face box になる）ので 1 にしている
+  (let ((bg (doom-color 'bg))
+        (band (doom-color 'base3)))
+    (set-face-attribute 'org-level-1 nil :height 1.4 :background band :extend t
+                        :box `(:line-width (1 . 8) :color ,band))
+    (set-face-attribute 'org-level-2 nil :height 1.2
+                        :box `(:line-width (1 . 6) :color ,bg))
+    (set-face-attribute 'org-level-3 nil :height 1.1
+                        :box `(:line-width (1 . 4) :color ,bg))
+    (set-face-attribute 'org-level-4 nil :height 1.05))
+  ;; 日本語に挟まれた =code= や *太字* も強調として扱う（既定では前後が空白・記号でないと効かない）
+  (setcar org-emphasis-regexp-components
+          (concat (car org-emphasis-regexp-components) "[:nonascii:]"))
+  (setcar (nthcdr 1 org-emphasis-regexp-components)
+          (concat (nth 1 org-emphasis-regexp-components) "[:nonascii:]"))
+  (org-set-emph-re 'org-emphasis-regexp-components org-emphasis-regexp-components)
   :bind
   (("C-c a" . org-agenda)
    ("C-c c" . org-capture)
@@ -363,6 +411,11 @@
 
 (use-package org-modern
   :ensure t
+  :custom
+  ;; [8/8] は進捗バーのラベルにしない（見出しの :box と重なって大きな灰色の箱になるため）
+  (org-modern-progress nil)
+  ;; :tag: はラベルにしない（大きい見出しの中だとラベルの背景が縦に伸びて形が崩れるため）
+  (org-modern-tag nil)
   :config
   (global-org-modern-mode 1))
 
