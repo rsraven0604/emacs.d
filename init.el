@@ -6,6 +6,13 @@
 (add-to-list 'package-archives '("gnu" . "https://elpa.gnu.org/packages/") t)
 (package-initialize)
 
+;; Custom が書き込む設定は init.el ではなく custom.el に置く（git 管理外）
+(use-package emacs
+  :config
+  (setq custom-file (locate-user-emacs-file "custom.el"))
+  (when (file-exists-p custom-file)
+    (load custom-file)))
+
 ;; 余計なファイルを生成しない
 (use-package files
   :config
@@ -541,21 +548,3 @@
   :ensure t
   :config
   (global-git-gutter-mode 1))
-
-;; 自動生成された設定（そのまま残す）
-(custom-set-variables
- ;; custom-set-variables was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(package-selected-packages
-   '(affe cape consult corfu flycheck git-gutter magit marginalia
-          markdown-mode orderless org-modern org-roam pyvenv treemacs
-          treemacs-icons-dired treemacs-magit treemacs-nerd-icons
-          vertico zenburn-theme)))
-(custom-set-faces
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- )
