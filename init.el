@@ -34,7 +34,7 @@
 ;; フォント設定
 (use-package emacs
   :config
-  (set-face-attribute 'default nil :family "Monaspace Xenon Var" :height 120)
+  (set-face-attribute 'default nil :family "Monaspace Xenon NF" :height 120)
   (setq-default line-spacing 0.2)
   ;; 日本語は Cica を 1.25 倍で使い、英字（10px）のちょうど2倍の幅（20px）にする（org の表の縦線を揃えるため）
   ;; 英字だけの行は 20px、日本語を含む行は 24px の高さになる（2026-10-10 実測）
