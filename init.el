@@ -423,6 +423,15 @@
   ;; タグは作業中に見るものではないので、背景を地の色に近づけ、文字も暗くして目立たなくする
   (set-face-attribute 'org-modern-tag nil :inherit 'org-modern-label
                       :background (doom-color 'bg-alt) :foreground (doom-color 'base5))
+  ;; 残作業を浮かせる：TODO などの未完了ラベルは橙の地に暗い文字（:inverse-video なので前景と背景が入れ替わる）
+  (set-face-attribute 'org-modern-todo nil
+                      :foreground (doom-color 'orange) :background (doom-color 'bg) :weight 'bold)
+  ;; 進捗バーは、済んだ分を地に沈め、残りの分を暗い橙にする（全部済んだフェーズは沈み、途中のフェーズが目立つ）
+  (set-face-attribute 'org-modern-progress-complete nil
+                      :background (doom-color 'base4) :foreground (doom-color 'base6))
+  (set-face-attribute 'org-modern-progress-incomplete nil
+                      :background (color-darken-name (doom-color 'orange) 30)
+                      :foreground (doom-color 'base8) :weight 'bold)
   (global-org-modern-mode 1))
 
 (use-package org-modern-indent
