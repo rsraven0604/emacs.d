@@ -238,8 +238,11 @@
             (progn (visual-line-mode -1) (setq truncate-lines t))
           (visual-line-mode 1)))))
   (defun my:org-setup-look ()
-    "org の見た目：行番号を消し、長い行を折り返す（表の中にいる間は折り返さない）。"
+    "org の見た目：行番号を消し、長い行を折り返す（表の中にいる間は折り返さない）。
+本文の文字色はほんの少し暗くし、見出しとの差を付ける（org のバッファだけ）。"
     (display-line-numbers-mode -1)
+    (face-remap-add-relative 'default :foreground
+                             (color-darken-name (doom-color 'fg) 6))
     (visual-line-mode 1)
     (add-hook 'post-command-hook #'my:org-toggle-wrap-at-table nil t))
   :init
@@ -280,9 +283,15 @@
                 (when (file-exists-p "~/Dropbox/roam/daily/")
                   (directory-files-recursively "~/Dropbox/roam/daily/" "\\.org$"))))
   ;; 見出しの見た目：大きさで段差を付ける
-  (set-face-attribute 'org-level-1 nil :height 1.4)
-  (set-face-attribute 'org-level-2 nil :height 1.2)
-  (set-face-attribute 'org-level-3 nil :height 1.1)
+  ;; 見出し1〜3は文字色をテーマの色より明るくし、見出し1には下線も引いて本文から浮かせる
+  (require 'color)
+  (set-face-attribute 'org-level-1 nil :height 1.4
+                      :foreground (color-lighten-name (doom-color 'blue) 12)
+                      :underline `(:color ,(doom-color 'dark-blue) :position 3))
+  (set-face-attribute 'org-level-2 nil :height 1.2
+                      :foreground (color-lighten-name (doom-color 'magenta) 12))
+  (set-face-attribute 'org-level-3 nil :height 1.1
+                      :foreground (color-lighten-name (doom-color 'violet) 10))
   (set-face-attribute 'org-level-4 nil :height 1.05)
   ;; 日本語に挟まれた =code= や *太字* も強調として扱う（既定では前後が空白・記号でないと効かない）
   (setcar org-emphasis-regexp-components
@@ -411,6 +420,9 @@
 (use-package org-modern
   :ensure t
   :config
+  ;; タグは作業中に見るものではないので、背景を地の色に近づけ、文字も暗くして目立たなくする
+  (set-face-attribute 'org-modern-tag nil :inherit 'org-modern-label
+                      :background (doom-color 'bg-alt) :foreground (doom-color 'base5))
   (global-org-modern-mode 1))
 
 (use-package org-modern-indent
