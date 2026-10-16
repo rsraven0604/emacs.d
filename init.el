@@ -368,6 +368,13 @@
            "* 問い\n** %?\n\n* 自分の言葉で\n\n* 確かめたコード\n#+begin_src python\n\n#+end_src\n\n* あとで足したこと\n"
            :target (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
                              "#+title: ${title}\n#+date: %U\n#+filetags: :learning:\n#+PROPERTY: header-args:python :python ~/repos/pystudy/.venv/bin/python :session pystudy :results output\n\n")
+           :unnarrowed t)
+          ;; 本のノート：1章に1つ。学習ノートの「確かめたコード」の代わりに「考えたこと」を置く。
+          ;; 「考えたこと」をほかのノートからも指したくなったら、C-c n i で1枚に分ける（元の場所にリンクが残る）
+          ("b" "📕 Book Note" plain
+           "書名: %^{書名}\n章・ページ: %^{章・ページ}\n\n* 問い\n** %?\n\n* 自分の言葉で\n\n* 考えたこと\n\n* あとで足したこと\n"
+           :target (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
+                             "#+title: ${title}\n#+date: %U\n#+filetags: :book:\n\n")
            :unnarrowed t)))
 
   ;; org-roam-dailies設定
