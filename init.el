@@ -41,15 +41,24 @@
 ;; フォント設定
 (use-package emacs
   :config
-  (set-face-attribute 'default nil :family "Monaspace Xenon NF" :height 120)
   ;; 行間は上下に半分ずつ置く（下だけに置くと、背景付きのラベルの中で文字が上に寄る。Emacs 31 から cons で書ける）
   (setq-default line-spacing '(0.1 . 0.1))
-  ;; 日本語は Cica を 1.25 倍で使い、英字（10px）のちょうど2倍の幅（20px）にする（org の表の縦線を揃えるため）
-  ;; 英字だけの行は 20px、日本語を含む行は 24px の高さになる（2026-10-10 実測）
-  (setq face-font-rescale-alist '(("Cica" . 1.25)))
-  (dolist (script '(han kana cjk-misc japanese-jisx0208))
-    (set-fontset-font t script (font-spec :family "Cica")))
-  (set-frame-size (selected-frame) 120 48))
+  (if (string= (system-name) "rs-cfj9")
+      ;; rs-cfj9 は 1366x768 の小さい画面なので、日本語も入ったピクセルフォントを使う
+      ;; 10px 版を 2 倍の 20px で使うと、ドットが崩れず、英字 10px・日本語 20px の幅になる（2026-10-17 実測）
+      ;; 画面に入るのは約 136 桁 × 38 行なので、桁数・行数は決めずに最大化する
+      (progn
+        (set-face-attribute 'default nil :font "Fusion Pixel 10px Monospaced ja:pixelsize=20")
+        (dolist (script '(han kana cjk-misc japanese-jisx0208))
+          (set-fontset-font t script (font-spec :family "Fusion Pixel 10px Monospaced ja")))
+        (set-frame-parameter nil 'fullscreen 'maximized))
+    (set-face-attribute 'default nil :family "Monaspace Xenon NF" :height 120)
+    ;; 日本語は Cica を 1.25 倍で使い、英字（10px）のちょうど2倍の幅（20px）にする（org の表の縦線を揃えるため）
+    ;; 英字だけの行は 20px、日本語を含む行は 24px の高さになる（2026-10-10 実測）
+    (setq face-font-rescale-alist '(("Cica" . 1.25)))
+    (dolist (script '(han kana cjk-misc japanese-jisx0208))
+      (set-fontset-font t script (font-spec :family "Cica")))
+    (set-frame-size (selected-frame) 120 48)))
 
 
 ;; キーバインド設定
