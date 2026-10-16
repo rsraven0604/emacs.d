@@ -534,23 +534,68 @@
   :defer t)
 
 ;; Python開発環境
+;; .py は tree-sitter のモードで開く（文法が無ければ初めて開いたときに入れるか聞かれる）
+(use-package treesit
+  :config
+  (customize-set-variable 'treesit-enabled-modes '(python-ts-mode)))
+
+;; REPL（run-python）は IPython。python は有効な .venv のものが使われるので、
+;; .venv に IPython が無ければ `uv add --dev ipython` で入れる
+(use-package python
+  :custom
+  (python-shell-interpreter "python")
+  (python-shell-interpreter-args "-m IPython --simple-prompt"))
+
+(defun my/pyvenv-activate-project ()
+  "上の階層にある .venv（uv が作るもの）を有効にする。"
+  (when-let* ((root (locate-dominating-file default-directory ".venv"))
+              (venv (file-name-as-directory (expand-file-name ".venv" root))))
+    (unless (equal pyvenv-virtual-env venv)
+      (pyvenv-activate venv))))
+
+;; :hook だけだと読み込みが遅れ、フックの中で pyvenv-virtual-env が未定義になるため :demand で読む
 (use-package pyvenv
   :ensure t
+  :demand t
+  :hook (python-base-mode . my/pyvenv-activate-project)
   :config
   (setenv "WORKON_HOME" "~/.virtualenvs")
   (pyvenv-mode 1))
 
 ;; The Emacs Client for LSP servers
 (use-package eglot
-  :hook (clojure-mode . eglot-ensure)
+  :hook ((clojure-mode . eglot-ensure)
+         (python-base-mode . eglot-ensure))
   :custom
   (eldoc-echo-area-use-multiline-p nil)
-  (eglot-connect-timeout 600))
+  (eglot-connect-timeout 600)
+  :config
+  ;; 監視するのはプロジェクトの中だけにする。pyright は /usr/lib/python3.14 全体（約5,200ディレクトリ）の
+  ;; 監視も頼み、eglot-max-file-watches（10000）を超えて断られると落ちる（2026-10-16 実測）
+  (setq eglot-watch-files-outside-project-root nil)
+  ;; pylsp も入っているが、型を見る pyright を使う
+  (add-to-list 'eglot-server-programs
+               '((python-mode python-ts-mode) . ("pyright-langserver" "--stdio"))))
 
 (use-package flycheck
   :ensure t
   :config
   (global-flycheck-mode 1))
+
+;; eglot の診断を flycheck に出す（flymake と二重に出さない）
+(use-package flycheck-eglot
+  :ensure t
+  :after (flycheck eglot)
+  :config
+  (global-flycheck-eglot-mode 1))
+
+;; Python は保存したときに ruff で整形する
+(use-package apheleia
+  :ensure t
+  :hook (python-base-mode . apheleia-mode)
+  :config
+  (setf (alist-get 'python-mode apheleia-mode-alist) 'ruff)
+  (setf (alist-get 'python-ts-mode apheleia-mode-alist) 'ruff))
 
 (use-package git-gutter
   :ensure t
