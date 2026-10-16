@@ -381,6 +381,13 @@
           ("r" "📚 Reference" plain "URL: %^{URL}\n\n%?"
            :target (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
                              "#+title: ${title}\n#+date: %U\n#+filetags: :reference:\n\n")
+           :unnarrowed t)
+          ;; 学習ノート：教材を閉じて「自分の言葉で」を書き、思い出せなかったことは「あとで足したこと」に分ける。
+          ;; 復習は「問い」の見出しを畳んだまま答えを思い出してから開く
+          ("l" "📖 Learning Note" plain
+           "* 問い\n** %?\n\n* 自分の言葉で\n\n* 確かめたコード\n#+begin_src python\n\n#+end_src\n\n* あとで足したこと\n"
+           :target (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
+                             "#+title: ${title}\n#+date: %U\n#+filetags: :learning:\n\n")
            :unnarrowed t)))
 
   ;; org-roam-dailies設定
