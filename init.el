@@ -215,26 +215,12 @@
 (use-package org
   :mode (("\\.org\\'" . org-mode))
   :preface
-  (defun my:org-goto-inbox ()
-    (interactive)
-    (find-file org-default-notes-file))
-  (defun my:org-goto-diary ()
-    "Open current month's diary file"
-    (interactive)
-    (find-file (concat "~/Dropbox/diary/" (format-time-string "%Y%m") ".org")))
-  (defun my:org-goto-diary-today ()
-    "Open today's entry in diary"
-    (interactive)
-    (my:org-goto-diary)
-    (goto-char (point-min))
-    (search-forward (format-time-string "* %Y-%m-%d") nil t))
   (defun my:refresh-org-agenda-files ()
     "Refresh org-agenda-files to include new org-roam daily files"
     (interactive)
     (setq org-agenda-files
-          (append '("~/Dropbox/agenda/")
-                  (when (file-exists-p "~/Dropbox/roam/daily/")
-                    (directory-files-recursively "~/Dropbox/roam/daily/" "\\.org$"))))
+          (when (file-exists-p "~/Dropbox/roam/daily/")
+            (directory-files-recursively "~/Dropbox/roam/daily/" "\\.org$")))
     (message "Refreshed org-agenda-files with %d files" (length org-agenda-files)))
   (defvar-local my:org-wrap-off-in-table nil
     "カーソルが表の中にあるため折り返しを止めているとき t。")
@@ -255,16 +241,9 @@
     (visual-line-mode 1)
     (add-hook 'post-command-hook #'my:org-toggle-wrap-at-table nil t))
   :init
-  (setq org-directory "~/Dropbox/agenda/")
   (setq system-time-locale "C")
   (setq org-hide-leading-stars t)
   (setq org-startup-folded nil)
-  (setq org-todo-keywords
-        '((sequence "INBOX(i)" "TODO(t)" "NEXT(n)" "WAIT(w)" "PROJECT(p)" "|" "DONE(d)" "CANCELLED(c)" "SOMEDAY(s)")))
-  (setq org-tag-alist
-        '(("@office" . ?o) ("@home" . ?h) ("@computer" . ?c) ("@phone" . ?p) ("@errands" . ?e)
-          ("@agenda" . ?a) ("@reading" . ?r) ("@waiting" . ?w)
-          ("energy_high" . ?H) ("energy_low" . ?L) ("time_15min" . ?1) ("time_30min" . ?3) ("time_1hr" . ?6)))
   (setq org-startup-indented t)
   ;; 見た目：本文の字下げを深くし、強調の記号と #+TITLE: の文字を隠す
   (setq org-indent-indentation-per-level 3)
@@ -273,24 +252,19 @@
   ;; 折り返しを日本語の文字の切れ目でも行う（既定では空白でしか折り返さない）
   (setq word-wrap-by-category t)
   (setq org-capture-templates
-        '(("i" "📥 Inbox (GTD)" entry (file+headline org-default-notes-file "inbox")
-           "** INBOX %?\n   CREATED: %U\n")
-          ("t" "✅ Next Action (GTD)" entry (file+headline org-default-notes-file "next_actions")
-           "** TODO %? %^G\n   CREATED: %U\n")
-          ("p" "📋 Project (GTD)" entry (file+headline org-default-notes-file "projects")
-           "** PROJECT %^{Project Name} %^G\n   CREATED: %U\n   %?")))
+        '(;; やりたいこと箱（中長期の目標管理。見直しは Claude の yaritai スキルで行う）
+          ("g" "💡 やりたいこと" entry (file+headline "~/Dropbox/claude/goals/goals.org" "やりたいこと箱")
+           "** IDEA %? %^G\n   :PROPERTIES:\n   :CREATED:  %U\n   :END:\n")))
   (setq org-refile-targets '((org-agenda-files :maxlevel . 1)))
   (setq org-log-done 'time)
   (setq org-clock-clocked-in-display 'frame-title)
-  (setq org-default-notes-file (concat org-directory "main.org"))
   :hook
   (org-mode . my:org-setup-look)
   :config
   ;; org-agenda-filesの設定
   (setq org-agenda-files
-        (append '("~/Dropbox/agenda/")
-                (when (file-exists-p "~/Dropbox/roam/daily/")
-                  (directory-files-recursively "~/Dropbox/roam/daily/" "\\.org$"))))
+        (when (file-exists-p "~/Dropbox/roam/daily/")
+          (directory-files-recursively "~/Dropbox/roam/daily/" "\\.org$")))
   ;; 見出しの見た目：大きさで段差を付ける
   ;; 見出し1〜3は文字色をテーマの色より明るくし、見出し1には下線も引いて本文から浮かせる
   (require 'color)
@@ -312,9 +286,6 @@
   (("C-c a" . org-agenda)
    ("C-c c" . org-capture)
    ("C-c g" . org-clock-goto)
-   ("C-c i" . my:org-goto-inbox)
-   ("C-c d" . my:org-goto-diary)
-   ("C-c C-d" . my:org-goto-diary-today)
    ("C-c A" . my:refresh-org-agenda-files)
    :map org-mode-map
    ("M-n" . org-forward-same-level)
@@ -329,26 +300,7 @@
     (recenter-top-bottom))
   :init
   (setq org-agenda-custom-commands
-        '(("g" . "GTD Views")
-          ("gi" "Inbox" tags-todo "TODO=\"INBOX\"")
-          ("gn" "Next Actions" tags-todo "TODO=\"NEXT\"")
-          ("gw" "Waiting For" tags-todo "TODO=\"WAIT\"")
-          ("gp" "Projects" tags-todo "TODO=\"PROJECT\"")
-          ("gs" "Someday/Maybe" tags-todo "TODO=\"SOMEDAY\"")
-          ("gc" "Contexts")
-          ("gco" "@office" tags-todo "@office")
-          ("gch" "@home" tags-todo "@home")
-          ("gcc" "@computer" tags-todo "@computer")
-          ("gcp" "@phone" tags-todo "@phone")
-          ("gce" "@errands" tags-todo "@errands")
-          ("gr" "Reviews")
-          ("grd" "Daily Review" agenda ""
-           ((org-agenda-span 1)))
-          ("grw" "Weekly Review" agenda ""
-           ((org-agenda-span 7)))
-          ("gru" "Unscheduled" tags-todo
-           "-SCHEDULED>=\"<today>\"-DEADLINE>=\"<today>\"")
-          ("x" "Unscheduled Tasks" tags-todo
+        '(("x" "Unscheduled Tasks" tags-todo
            "-SCHEDULED>=\"<today>\"-DEADLINE>=\"<today>\"" nil)
           ("d" "Daily Tasks" agenda ""
            ((org-agenda-span 1)))))

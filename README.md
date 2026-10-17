@@ -81,7 +81,6 @@ emacs
 
 | パス | 使う設定 |
 | --- | --- |
-| `~/Dropbox/agenda/` | `org-directory`・`org-agenda-files` |
-| `~/Dropbox/roam/` | `org-roam-directory`・`org-roam-dailies` |
-| `~/Dropbox/diary/` | `my:org-goto-diary`（`C-c d`） |
+| `~/Dropbox/roam/` | `org-roam-directory`・`org-roam-dailies`・`org-agenda-files`（`daily/` の下） |
+| `~/Dropbox/claude/goals/goals.org` | `org-capture` の `g`（やりたいこと箱） |
 | `~/repos/org-modern-indent/` | `org-modern-indent` |
