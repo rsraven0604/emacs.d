@@ -17,8 +17,14 @@
 (use-package files
   :config
   (setq make-backup-files nil)
-  (setq auto-save-default nil)
-  (setq auto-save-list-file-prefix nil))
+  ;; 自動保存とロックファイルは ~/.emacs.d/auto-save/ にまとめる（編集中のファイルの横に作らない）。
+  ;; Xwayland ごと Emacs が落ちても、書きかけを M-x recover-file で戻せるようにするため
+  (let ((dir (locate-user-emacs-file "auto-save/")))
+    (make-directory dir t)
+    (setq auto-save-file-name-transforms `((".*" ,dir t)))
+    (setq lock-file-name-transforms `((".*" ,dir t)))
+    (setq auto-save-list-file-prefix (concat dir ".saves-")))
+  (setq auto-save-default t))
 
 
 ;; UI設定
@@ -402,7 +408,9 @@
                       :foreground (doom-color 'base8) :weight 'bold)
   (global-org-modern-mode 1))
 
+;; clone していない PC では読み込まない（無いまま hook に入れると org のファイルを開くたびに失敗する）
 (use-package org-modern-indent
+  :if (file-directory-p "~/repos/org-modern-indent/")
   :load-path "~/repos/org-modern-indent/"
   :hook (org-mode . org-modern-indent-mode))
 
