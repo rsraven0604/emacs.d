@@ -296,6 +296,11 @@
         (lambda (lang _body) (not (string= lang "python"))))
   ;; 実行で作ったグラフをその場で表示し直す
   (add-hook 'org-babel-after-execute-hook #'org-redisplay-inline-images)
+  ;; 行頭で <py TAB と打つと Python のコードブロックを入れる（<s TAB は言語なし）
+  (require 'org-tempo)
+  (add-to-list 'org-structure-template-alist '("py" . "src python"))
+  ;; C-c ' で開いた編集バッファーは、元の org と同じウィンドウに出す
+  (setq org-src-window-setup 'current-window)
   :bind
   (("C-c a" . org-agenda)
    ("C-c c" . org-capture)
@@ -362,7 +367,7 @@
           ("l" "📖 Learning Note" plain
            "* 問い\n** %?\n\n* 自分の言葉で\n\n* 確かめたコード\n#+begin_src python\n\n#+end_src\n\n* あとで足したこと\n"
            :target (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
-                             "#+title: ${title}\n#+date: %U\n#+filetags: :learning:\n\n")
+                             "#+title: ${title}\n#+date: %U\n#+filetags: :learning:\n#+PROPERTY: header-args:python :python ~/repos/pystudy/.venv/bin/python :session pystudy :results output\n\n")
            :unnarrowed t)))
 
   ;; org-roam-dailies設定
