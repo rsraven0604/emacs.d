@@ -288,6 +288,14 @@
   (setcar (nthcdr 1 org-emphasis-regexp-components)
           (concat (nth 1 org-emphasis-regexp-components) "[:nonascii:]"))
   (org-set-emph-re 'org-emphasis-regexp-components org-emphasis-regexp-components)
+  ;; コードブロックの実行（数学の学習を Emacs の中で完結させるため。~/Dropbox/study/comath/）
+  ;; Python のブロックだけは C-c C-c で確認なしに実行する（自分で書いたファイルだけで使う）
+  (org-babel-do-load-languages 'org-babel-load-languages
+                               '((emacs-lisp . t) (python . t)))
+  (setq org-confirm-babel-evaluate
+        (lambda (lang _body) (not (string= lang "python"))))
+  ;; 実行で作ったグラフをその場で表示し直す
+  (add-hook 'org-babel-after-execute-hook #'org-redisplay-inline-images)
   :bind
   (("C-c a" . org-agenda)
    ("C-c c" . org-capture)
