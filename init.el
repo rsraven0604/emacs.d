@@ -340,6 +340,41 @@
 
 (use-package org-roam
   :ensure t
+  :preface
+  (defun my:book-session (range)
+    "開いている本のノートの「読書ログ」の末尾に、今日の読書1回分の見出しを足す。
+RANGE は読んだ範囲（例：2.1〜2.2）。カーソルは「疑問」の下に置く。
+疑問は `my:book-question'（C-c n q）で足し、答えが出たら C-c C-t で「解決」にして下に答えを書く。"
+    (interactive "s読んだ範囲: ")
+    (unless (derived-mode-p 'org-mode)
+      (user-error "org のバッファーで実行してください"))
+    (widen)
+    (goto-char (point-min))
+    (if (re-search-forward "^\\* 読書ログ[ \t]*$" nil t)
+        (org-end-of-subtree t t)
+      (goto-char (point-max))
+      (unless (bolp) (insert "\n"))
+      (insert "\n* 読書ログ\n"))
+    (unless (bolp) (insert "\n"))
+    (insert (format "** %s %s\n*** 疑問\n" (format-time-string "[%Y-%m-%d %a]") range))
+    (save-excursion
+      (insert "\n*** 自分の言葉で\n\n*** あとで足したこと\n\n")))
+  (defun my:book-question ()
+    "読書ログの最後の回の「疑問」の末尾に、予想と答えの行の付いた「未解決」の見出しを足す。
+調べる前に予想を一言書いておき、答えが出たら出どころを添えて「答え」に書く。
+空の疑問を最初から骨組みに入れないのは、未解決の疑問の一覧（C-u C-c / t 未解決）に紛れるため。"
+    (interactive)
+    (unless (derived-mode-p 'org-mode)
+      (user-error "org のバッファーで実行してください"))
+    (widen)
+    (goto-char (point-max))
+    (unless (re-search-backward "^\\*\\*\\* 疑問[ \t]*$" nil t)
+      (user-error "先に C-c n s で今回の読書の見出しを作ってください"))
+    (org-end-of-subtree t t)
+    (unless (bolp) (insert "\n"))
+    (insert "**** 未解決 ")
+    (save-excursion
+      (insert "\n- 予想：\n- 答え：\n\n")))
   :config
   (setq org-roam-database-connector 'sqlite-builtin)
   (setq org-roam-directory (file-truename "~/Dropbox/roam"))
@@ -369,12 +404,14 @@
            :target (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
                              "#+title: ${title}\n#+date: %U\n#+filetags: :learning:\n#+PROPERTY: header-args:python :python ~/repos/pystudy/.venv/bin/python :session pystudy :results output\n\n")
            :unnarrowed t)
-          ;; 本のノート：1章に1つ。学習ノートの「確かめたコード」の代わりに「考えたこと」を置く。
-          ;; 「考えたこと」をほかのノートからも指したくなったら、C-c n i で1枚に分ける（元の場所にリンクが残る）
-          ("b" "📕 Book Note" plain
-           "書名: %^{書名}\n章・ページ: %^{章・ページ}\n\n* 問い\n** %?\n\n* 自分の言葉で\n\n* 考えたこと\n\n* あとで足したこと\n"
+          ;; 本のノート：1冊1ファイル。目次の章を TODO 見出し、節を [ ] で並べて進み具合だけを付ける。
+          ;; 疑問と考察は末尾の「読書ログ」に読書1回ごとに書く（C-c n s で1回分の見出しを足す）。
+          ;; 疑問は「未解決」、答えが出たら「解決」（C-u C-c / t で 未解決 を入れると、未解決の疑問だけが見える）。
+          ;; 読む理由など目標に関わることは goals.org の「読みたい本」の IDEA に書き、:NOTE: でこのノートへリンクする
+          ("b" "📕 Book" plain
+           "- 著者：%^{著者}\n\n* TODO %?\n\n* 読書ログ\n"
            :target (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
-                             "#+title: ${title}\n#+date: %U\n#+filetags: :book:\n\n")
+                             "#+title: ${title}\n#+date: %U\n#+filetags: :book:\n#+TODO: TODO | DONE\n#+TODO: 未解決 | 解決\n\n")
            :unnarrowed t)))
 
   ;; org-roam-dailies設定
@@ -405,6 +442,8 @@
    ("C-c n g" . org-roam-graph)
    ("C-c n i" . org-roam-node-insert)
    ("C-c n c" . org-roam-capture)
+   ("C-c n s" . my:book-session)
+   ("C-c n q" . my:book-question)
    ("C-c n j" . org-roam-dailies-capture-today)
    ("C-c n d" . org-roam-dailies-goto-today)
    ("C-c n y" . org-roam-dailies-goto-yesterday)
