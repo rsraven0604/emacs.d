@@ -225,8 +225,8 @@
     "Refresh org-agenda-files to include new org-roam daily files"
     (interactive)
     (setq org-agenda-files
-          (when (file-exists-p "~/Dropbox/roam/daily/")
-            (directory-files-recursively "~/Dropbox/roam/daily/" "\\.org$")))
+          (when (file-exists-p "~/roam/daily/")
+            (directory-files-recursively "~/roam/daily/" "\\.org$")))
     (message "Refreshed org-agenda-files with %d files" (length org-agenda-files)))
   (defvar-local my:org-wrap-off-in-table nil
     "カーソルが表の中にあるため折り返しを止めているとき t。")
@@ -269,8 +269,8 @@
   :config
   ;; org-agenda-filesの設定
   (setq org-agenda-files
-        (when (file-exists-p "~/Dropbox/roam/daily/")
-          (directory-files-recursively "~/Dropbox/roam/daily/" "\\.org$")))
+        (when (file-exists-p "~/roam/daily/")
+          (directory-files-recursively "~/roam/daily/" "\\.org$")))
   ;; 見出しの見た目：大きさで段差を付ける
   ;; 見出し1〜3は文字色をテーマの色より明るくし、見出し1には下線も引いて本文から浮かせる
   (require 'color)
@@ -377,11 +377,11 @@ RANGE は読んだ範囲（例：2.1〜2.2）。カーソルは「疑問」の�
       (insert "\n- 予想：\n- 答え：\n\n")))
   :config
   (setq org-roam-database-connector 'sqlite-builtin)
-  (setq org-roam-directory (file-truename "~/Dropbox/roam"))
+  (setq org-roam-directory (file-truename "~/roam"))
   (setq org-roam-node-display-template
         (concat "${title:*} " (propertize "${tags:10}" 'face 'org-tag)))
   (setq org-roam-db-location "~/.org-roam.db")
-  (setq org-roam-index-file "~/Dropbox/roam/Index.org")
+  (setq org-roam-index-file "~/roam/Index.org")
 
   ;; org-roam-capture-templates設定（知識管理専用）
   (setq org-roam-capture-templates
