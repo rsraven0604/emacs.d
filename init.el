@@ -259,7 +259,7 @@
   (setq word-wrap-by-category t)
   (setq org-capture-templates
         '(;; やりたいこと箱（中長期の目標管理。見直しは Claude の yaritai スキルで行う）
-          ("g" "💡 やりたいこと" entry (file+headline "~/Dropbox/claude/goals/goals.org" "やりたいこと箱")
+          ("g" "💡 やりたいこと" entry (file+headline "~/claude/goals/goals.org" "やりたいこと箱")
            "** IDEA %? %^G\n   :PROPERTIES:\n   :CREATED:  %U\n   :END:\n")))
   (setq org-refile-targets '((org-agenda-files :maxlevel . 1)))
   (setq org-log-done 'time)
@@ -288,7 +288,7 @@
   (setcar (nthcdr 1 org-emphasis-regexp-components)
           (concat (nth 1 org-emphasis-regexp-components) "[:nonascii:]"))
   (org-set-emph-re 'org-emphasis-regexp-components org-emphasis-regexp-components)
-  ;; コードブロックの実行（数学の学習を Emacs の中で完結させるため。~/Dropbox/study/comath/）
+  ;; コードブロックの実行（数学の学習を Emacs の中で完結させるため。~/study/comath/）
   ;; Python のブロックだけは C-c C-c で確認なしに実行する（自分で書いたファイルだけで使う）
   (org-babel-do-load-languages 'org-babel-load-languages
                                '((emacs-lisp . t) (python . t)))
