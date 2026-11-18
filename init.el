@@ -225,8 +225,8 @@
     "Refresh org-agenda-files to include new org-roam daily files"
     (interactive)
     (setq org-agenda-files
-          (when (file-exists-p "~/roam/daily/")
-            (directory-files-recursively "~/roam/daily/" "\\.org$")))
+          (when (file-exists-p "~/sync/roam/daily/")
+            (directory-files-recursively "~/sync/roam/daily/" "\\.org$")))
     (message "Refreshed org-agenda-files with %d files" (length org-agenda-files)))
   (defvar-local my:org-wrap-off-in-table nil
     "カーソルが表の中にあるため折り返しを止めているとき t。")
@@ -259,7 +259,7 @@
   (setq word-wrap-by-category t)
   (setq org-capture-templates
         '(;; やりたいこと箱（中長期の目標管理。見直しは Claude の yaritai スキルで行う）
-          ("g" "💡 やりたいこと" entry (file+headline "~/claude/goals/goals.org" "やりたいこと箱")
+          ("g" "💡 やりたいこと" entry (file+headline "~/sync/claude/goals/goals.org" "やりたいこと箱")
            "** IDEA %? %^G\n   :PROPERTIES:\n   :CREATED:  %U\n   :END:\n")))
   (setq org-refile-targets '((org-agenda-files :maxlevel . 1)))
   (setq org-log-done 'time)
@@ -269,8 +269,8 @@
   :config
   ;; org-agenda-filesの設定
   (setq org-agenda-files
-        (when (file-exists-p "~/roam/daily/")
-          (directory-files-recursively "~/roam/daily/" "\\.org$")))
+        (when (file-exists-p "~/sync/roam/daily/")
+          (directory-files-recursively "~/sync/roam/daily/" "\\.org$")))
   ;; 見出しの見た目：大きさで段差を付ける
   ;; 見出し1〜3は文字色をテーマの色より明るくし、見出し1には下線も引いて本文から浮かせる
   (require 'color)
@@ -288,7 +288,7 @@
   (setcar (nthcdr 1 org-emphasis-regexp-components)
           (concat (nth 1 org-emphasis-regexp-components) "[:nonascii:]"))
   (org-set-emph-re 'org-emphasis-regexp-components org-emphasis-regexp-components)
-  ;; コードブロックの実行（数学の学習を Emacs の中で完結させるため。~/study/comath/）
+  ;; コードブロックの実行（数学の学習を Emacs の中で完結させるため。~/sync/study/comath/）
   ;; Python のブロックだけは C-c C-c で確認なしに実行する（自分で書いたファイルだけで使う）
   (org-babel-do-load-languages 'org-babel-load-languages
                                '((emacs-lisp . t) (python . t)))
@@ -377,11 +377,11 @@ RANGE は読んだ範囲（例：2.1〜2.2）。カーソルは「疑問」の�
       (insert "\n- 予想：\n- 答え：\n\n")))
   :config
   (setq org-roam-database-connector 'sqlite-builtin)
-  (setq org-roam-directory (file-truename "~/roam"))
+  (setq org-roam-directory (file-truename "~/sync/roam"))
   (setq org-roam-node-display-template
         (concat "${title:*} " (propertize "${tags:10}" 'face 'org-tag)))
   (setq org-roam-db-location "~/.org-roam.db")
-  (setq org-roam-index-file "~/roam/Index.org")
+  (setq org-roam-index-file "~/sync/roam/Index.org")
 
   ;; org-roam-capture-templates設定（知識管理専用）
   (setq org-roam-capture-templates
